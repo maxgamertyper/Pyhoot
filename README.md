@@ -1,2 +1,2 @@
 # Pyhoot
-A Library for Kahoot 
+A Library for the Kahoot API
