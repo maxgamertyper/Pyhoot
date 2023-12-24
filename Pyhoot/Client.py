@@ -9,7 +9,7 @@ import inspect
 import random
 
 class Client():
-    def __init__(self, gamepin, name="bot",quizuuid=None):
+    def __init__(self, gamepin=None, name="bot",quizuuid=None):
         self.data = {}
         self.sent = {}
         self.log=[]
@@ -35,10 +35,6 @@ class Client():
         self.disconnected=False
         self.quiz_data={}
 
-        a=Token(gamepin,self.UserAgent)
-        self.token=a["Token"]
-        self.game_info=a["info"]
-
     def on_open(self,ws):
         self.init_connection(ws)
     
@@ -58,10 +54,18 @@ class Client():
         else:
             raise exception(param1)
 
-    def start(self):
+    def start(self,gamepin=None):
+        self.gamepin=gamepin if gamepin is not None else self.gamepin
+        if self.gamepin==None:
+            self.exception_handler(Exceptions.GamePinException,"")
+        if self.token==None:
+            a=Token(self.gamepin,self.UserAgent)
+            self.token=a["Token"]
+            self.game_info=a["info"]
         try:
             ws = websocket.WebSocketApp(f'wss://kahoot.it/cometd/{self.gamepin}/{self.token}/', on_message=self.on_message, on_open=self.on_open,on_close=self.on_close)
-            threading.Thread(target=ws.run_forever).start()
+            wst=threading.Thread(target=ws.run_forever)
+            wst.start()
         except Exception as e:
             self.exception_handler(Exceptions.WebSocketInitException,e)
     
@@ -290,5 +294,5 @@ class Client():
             data.pop("id")
         return data
 
-    def random_answer(self):
-        self.submit_answer(random.randint(0,3))
+    def random_answer(self,delay:int=0):
+        self.submit_answer(random.randint(0,3),delay)
