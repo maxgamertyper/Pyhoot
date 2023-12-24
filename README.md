@@ -15,6 +15,7 @@ Client(gamepin:optional,name:optional) used to define the bot
 .join(gamepin:optional) joins the bot to the game
 
 @bot.event_listener()
+
 types:
 "pinged"
 "handshake_1"
