@@ -8,7 +8,7 @@ Mintysharky added some comments here and there, and was a great help.
 
 New release in 1994?
 
-#documentation:
+# documentation:
 Client(gamepin:optional,name:optional) used to define the bot
 
 .start(gamepin:gamepin) starts the websocket
