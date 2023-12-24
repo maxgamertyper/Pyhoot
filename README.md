@@ -8,7 +8,7 @@ Mintysharky added some comments here and there, and was a great help.
 
 New release in 1994?
 
-# documentation:
+## documentation:
 Client(gamepin:optional,name:optional) used to define the bot
 
 .start(gamepin:gamepin) starts the websocket
@@ -17,18 +17,18 @@ Client(gamepin:optional,name:optional) used to define the bot
 @bot.event_listener()
 
 types:
-"pinged"
-"handshake_1"
-"handshake_2"
-"avatar_updated" 
-"disconnected"
-"question_started" 
-"question_ended"
-"question_awaited"
-"quiz_started" 
-"quiz_ended
-"unknown_message"
-"joined"
+* "pinged"
+* "handshake_1"
+* "handshake_2"
+* "avatar_updated" 
+* "disconnected"
+* "question_started" 
+* "question_ended"
+* "question_awaited"
+* "quiz_started" 
+* "quiz_ended
+* "unknown_message"
+* "joined"
 
 put this decorator above a function with an argument allowing for data to be sent
 
