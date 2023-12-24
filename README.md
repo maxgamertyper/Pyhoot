@@ -8,4 +8,32 @@ Mintysharky added some comments here and there, and was a great help.
 
 New release in 1994?
 
-Documentation:
+#documentation:
+Client(gamepin:optional,name:optional) used to define the bot
+
+.start(gamepin:gamepin) starts the websocket
+.join(gamepin:optional) joins the bot to the game
+
+@bot.event_listener()
+types:
+"pinged"
+"handshake_1"
+"handshake_2"
+"avatar_updated" 
+"disconnected"
+"question_started" 
+"question_ended"
+"question_awaited"
+"quiz_started" 
+"quiz_ended
+"unknown_message"
+"joined"
+
+put this decorator above a function with an argument allowing for data to be sent
+
+bot.random_answer(delay:optional) sends a random answer
+bot.submit_answer(answer:,delay:optional(in seconds))
+
+bot.kill() instantly stops the bot
+bot.close() safley closes the bot
+
