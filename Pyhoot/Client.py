@@ -37,9 +37,6 @@ class Client():
 
     def on_open(self,ws):
         self.init_connection(ws)
-    
-    def on_close(self,ws):
-        print("Websocket closed")
 
     def on_message(self,ws, message):
         self.MessageReceiver(message)
@@ -63,7 +60,7 @@ class Client():
             self.token=a["Token"]
             self.game_info=a["info"]
         try:
-            ws = websocket.WebSocketApp(f'wss://kahoot.it/cometd/{self.gamepin}/{self.token}/', on_message=self.on_message, on_open=self.on_open,on_close=self.on_close)
+            ws = websocket.WebSocketApp(f'wss://kahoot.it/cometd/{self.gamepin}/{self.token}/', on_message=self.on_message, on_open=self.on_open)
             wst=threading.Thread(target=ws.run_forever)
             wst.start()
         except Exception as e:
