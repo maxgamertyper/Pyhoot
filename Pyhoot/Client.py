@@ -7,14 +7,16 @@ from Pyhoot.Token import Token
 import Pyhoot.Exceptions as Exceptions
 import inspect
 import random
+import itertools
 
 class Client():
-    def __init__(self, gamepin=None, name="bot",quizuuid=None):
+    def __init__(self, gamepin=None, name="bot",quizuuid=None,random_text="Hello, I am a bot and can not answer this question"):
         self.data = {}
         self.sent = {}
         self.log=[]
+        self.random_text=random_text
         self.latest_listener_call=None
-        self.previous_send={}
+        self.previous_data={}
         self.message_count = 1
         self.WebSocket = None
         self.WebChannels={ "META_HANDSHAKE": "/meta/handshake", "META_CONNECT": "/meta/connect", "META_DISCONNECT": "/meta/disconnect", "SERVICE_CONTROLLER": "/service/controller", "SERVICE_PLAYER": "/service/player" }
@@ -96,11 +98,11 @@ class Client():
     def event_listener(self, type):
         def custom_decorator(func):
             if not callable(func):
-                raise Exceptions.ListenerFunctionNotCallableException(type)
+                self.exception_handler(Exceptions.ListenerFunctionNotCallableException,type)
             parameters = inspect.signature(func).parameters
             has_parameters = any(p.kind == p.POSITIONAL_OR_KEYWORD for p in parameters.values())
             if not has_parameters:
-                raise Exceptions.ListenerFunctionParamatersException(type)
+                self.exception_handler(Exceptions.ListenerFunctionParametersException,type)
             if type in self.listening_types:
                 self.listening_functions[type] = func
             else:
@@ -109,7 +111,7 @@ class Client():
     
     #used for reciving messages
     def MessageReceiver(self, msg):
-        self.previous_send=self.data
+        self.previous_data=self.data
         self.data = JSON.loads(msg)[0]
         self.log.append(JSON.loads(msg))
         self.MessageHandler()
@@ -178,7 +180,7 @@ class Client():
         if callable(func):
             func(info)
         if callable(prev_func):
-            prev_func(self.previous_send)
+            prev_func(self.previous_data)
             self.latest_listener_call="question_answered"
     
     #used for sending messages
@@ -242,7 +244,8 @@ class Client():
     def disconnect(self):
         self.disconnected=True
         self.send([{"id":str(self.message_count),"channel":self.WebChannels["META_DISCONNECT"],"clientId":str(self.clientId),"ext":{"timesync":{"tc":self.time(),"l":0,"o":0}}}])
-        self.listening_functions["disconnected"]({"data":{"gameid":self.gamepin,'host':'kahoot.it',"id":10,'type':'message'},"reason":"player left"})
+        if callable(self.listening_functions.get("disconnected")):
+            self.listening_functions["disconnected"]({"data":{"gameid":self.gamepin,'host':'kahoot.it',"id":10,'type':'message'},"reason":"player left"})
         self.logged_in.clear()
     
     # used to change profiles in a kahoot game
@@ -254,16 +257,52 @@ class Client():
 
     #used to submit an answer in a kahoot game
     def submit_answer(self,answer,delay:int=0):
-        lag=round(random.random() * 60 + 5)
+        lag=round(random.random() * 60 + 5) + (delay*100)
         answer=0 if answer=="red" else answer
         answer=1 if answer=="blue" else answer
         answer=2 if answer=="yellow" else answer
         answer=3 if answer=="green" else answer
         time.sleep(delay+.25)
-        data=self.data_factory(JSON.dumps({"choice": answer, "questionIndex": self.questionindex, "meta": {"lag": lag}, "type": "quiz"}),"message",45)
-        packet=self.packet_factory("SERVICE_CONTROLLER",data)
+        packet=self.question_packet_factory(answer,lag)
         self.send(packet)
         self.questionindex+=1
+
+    def random_answer(self,delay:int=0):
+        answer=None
+        content_data=JSON.loads(self.question_data.get("data").get("content"))
+        question_type=content_data.get("type")
+        if question_type=="drop_pin":
+            # x:0 is far left
+            # y:0 is far up
+            answer={"x":(random.randint(0,1000000))/10000,"y":(random.randint(0,1000000))/10000}
+        elif question_type=="jumble":
+            answer=list(random.choice(list(itertools.permutations([0,1,2,3],4))))
+        elif question_type=="multiple_select_poll" or question_type=="multiple_select_quiz":
+            amount=random.randint(1,int(content_data.get("numberOfChoices")))
+            numbers=[0,1,2,3]
+            answer=[]
+            while amount>0:
+                num=random.choice(numbers)
+                answer.append(num)
+                numbers.remove(num)
+                amount-=1
+        elif question_type=="feedback" or question_type=="brainstorming" or question_type=="word_cloud" or question_type=="open_ended":
+            answer=self.random_text
+        elif question_type=="slider":
+            step=int(content_data.get("step"))
+            min=int(content_data.get("minRange"))
+            max=int(content_data.get("maxRange"))
+            number=random.randint(min,max)
+            number=round(number / step) * step
+            answer=number+min
+        else:
+            if content_data.get("layout")=="TRUE_FALSE":
+                answer=random.randint(0,1)
+            elif question_type=="quiz":
+                answer=random.randint(0,3)
+            elif question_type=="survey":
+                answer=random.randint(0,int(content_data.get("numberOfChoices"))-1)
+        self.submit_answer(answer,delay)
 
     def packet_factory(self,channel,data="",ext={}):
         packet=[{
@@ -290,6 +329,74 @@ class Client():
         if id_int==-1:
             data.pop("id")
         return data
+    
+    def question_content_factory(self,answer,lag):
+        question_type=JSON.loads(self.question_data.get("data").get("content")).get("type")
+        content={
+            "type":question_type,
+            "questionIndex":self.questionindex,
+            "meta":{"lag":lag}
+        }
+        if question_type=="drop_pin":
+            if type(answer) is dict:
+                content["pin"]=answer
+            else:
+                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+        elif question_type=="jumble" or question_type=="multiple_select_poll" or question_type=="multiple_select_quiz":
+            if type(answer) is list:
+                content["choice"]=answer
+            else:
+                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+        elif question_type=="brainstorming" or question_type=="word_cloud" or question_type=="open_ended":
+            if type(answer) is str:
+                content["text"]=answer
+            else:
+                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+        elif question_type=="feedback":
+            if type(answer) is str:
+                content["text"]=answer
+                content["textHighlightIndex"]=-1
+            else:
+                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+        elif question_type=="slider":
+            if type(answer) is int:
+                content["choice"]=answer
+            else:
+                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+        else:
+            if JSON.loads(self.question_data.get("data").get("content")).get("layout")=="TRUE_FALSE":
+                if answer=="blue" or answer==0:
+                    answer=0
+                elif answer=="red" or answer==1:
+                    answer=1
+                else:
+                    self.exception_handler(Exceptions.InvalidAnswerException,answer)
+            elif question_type=="quiz":
+                if answer=="blue" or answer==0:
+                    answer=0
+                elif answer=="red" or answer==1:
+                    answer=1
+                elif answer=="yellow" or answer==2:
+                    answer=2
+                elif answer=="green" or answer==3:
+                    answer=3
+                else:
+                    self.exception_handler(Exceptions.InvalidAnswerException,answer)
+            content["choice"]=answer
+        return content
 
-    def random_answer(self,delay:int=0):
-        self.submit_answer(random.randint(0,3),delay)
+    def question_packet_factory(self,answer,lag):
+        packet=[{
+            "id":str(self.message_count),
+            "channel": self.WebChannels["SERVICE_CONTROLLER"],
+            "data":{
+                "id":45,
+                "type":"message",
+                "gameid":str(self.gamepin),
+                "host":"kahoot.it",
+                "content":JSON.dumps(self.question_content_factory(answer,lag))
+                },
+            "clientId":str(self.clientId),
+            "ext":{}
+        }]
+        return packet
