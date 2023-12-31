@@ -1,7 +1,10 @@
 # V1.1 (debugging):
 * adds support for all question types
 * adds bot.crash_lobby()
-
+  
+## important other things
+* add to pip/pypi
+  
 ## V1.2 (understood, needs tested):
 * adds 2 auth bypass
 
@@ -12,3 +15,4 @@
 * add other connection type support
 * add team mode support
 * add other game mode type support
+  
