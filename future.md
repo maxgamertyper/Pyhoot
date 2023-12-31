@@ -1,12 +1,12 @@
 # V1.1 (debugging):
 * adds support for all question types
-* adds bot.crash_lobby()
   
 ## important other things
 * add to pip/pypi
   
 ## V1.2 (understood, needs tested):
 * adds 2 auth bypass
+* adds bot.crash_lobby()
 
 ### v1.3+ (ideas noted):
 * add course support
