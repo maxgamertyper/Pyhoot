@@ -1,5 +1,7 @@
 from Pyhoot.Client import Client
 import threading
+import time
+import random
 
 gamepin = str(input("gamepin: "))
 threadlist = []
@@ -25,6 +27,7 @@ for name in names:
     t = threading.Thread(target=create, args=(name,))
     t.start()
     threadlist.append(t)
+    time.sleep(random.randint(10,30)/10)
 
 for thread in threadlist:
-    thread.start()
+    thread.join()
