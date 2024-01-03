@@ -27,4 +27,4 @@ for name in names:
     threadlist.append(t)
 
 for thread in threadlist:
-    thread.join()
+    thread.start()
