@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 Which error was thrown (if applicable)
 
 **log (if applicable)**
-what was the log (please surround in ```your info```)
+what was the log (please surround in ```grave keys```)
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
