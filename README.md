@@ -6,6 +6,7 @@ Mintysharky added some comments here and there, and was a decent help.
 
 # Installation
 https://pypi.org/project/Pyhoot/1.0.3/
+
 pip install Pyhoot
 
 New release in 1994?
