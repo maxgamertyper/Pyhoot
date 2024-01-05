@@ -12,4 +12,5 @@
 * add other connection type support
 * add team mode support
 * add other game mode type support
+* add an ability to host a game
   
