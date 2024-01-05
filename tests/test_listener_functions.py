@@ -1,3 +1,5 @@
+from Pyhoot.Client import Client
+
 bot=Client()
 
 for listener_type in bot.ListeningData["types"]:
