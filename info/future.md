@@ -3,8 +3,10 @@
 * adds bot.crash_lobby()
 * add bot.find_gamepin() (to test if that gamepin would be valid)
 
-##v1.3 (ideas noted):
-*add team mode support
+
+## v1.3 (ideas noted):
+* add team mode support
+
 
 ## v1.4+ (ideas noted):
 * add course support
