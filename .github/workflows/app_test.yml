@@ -39,7 +39,7 @@ jobs:
         ls -al
         ls -al Pyhoot
         ls -al Pyhoot/tests
-    
+        ls -al Pyhoot/tests/*
     - name: Test with pytest
       run: |
         cd Pyhoot
