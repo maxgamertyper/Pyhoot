@@ -3,9 +3,6 @@
 * adds bot.crash_lobby()
 * add bot.find_gamepin() (to test if that gamepin would be valid)
 
-## important other things
-* add to pip/pypi
-
 ## v1.3+ (ideas noted):
 * add course support
 * add an answer getter (would not work with random answers and questions)
