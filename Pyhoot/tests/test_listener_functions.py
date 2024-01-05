@@ -1,4 +1,4 @@
-from ..Client import Client
+from Pyhoot.Client import Client
 
 bot=Client()
 
