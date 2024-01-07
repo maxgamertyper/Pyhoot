@@ -1,10 +1,4 @@
-# V1.2 (testing):
-* adds 2 auth bypass
-* adds bot.crash_lobby()
-* add bot.find_gamepin() (to test if that gamepin would be valid)
-
-
-## v1.3 (ideas noted):
+# v1.3 (ideas noted):
 * add team mode support
 
 
