@@ -5,3 +5,11 @@
 * can play solo games
 * can submit question answers
 * can understand different events inside the game
+
+# V1.1:
+* added support for all question types
+
+# V1.2:
+* fixed change_profile()
+* added crash_lobby()
+* added a 2 step bypass
