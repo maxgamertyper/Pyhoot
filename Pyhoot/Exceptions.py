@@ -4,11 +4,15 @@ class NameTakenException(Exception):
 
 class WebSocketInitException(Exception):
     def __init__(self,error) -> None:
-        super().__init__(f"There was an error in initializng the websocket, {error}")
+        super().__init__(f"There was an error in initializng the websocket, \"{error}\"")
+
+class InvalidAnswerException(Exception):
+    def __init__(self,answer) -> None:
+        super().__init__(f"The answer \"{answer}\" is invalid for this question")
 
 class KahootInitException(Exception):
     def __init__(self,error) -> None:
-        super().__init__(f"There was an error in connecting the websocket to kahoot, {error}")
+        super().__init__(f"There was an error in connecting the websocket to kahoot, \"{error}\"")
 
 class GamePinException(Exception):
     def __init__(self,Pin) -> None:
@@ -16,28 +20,32 @@ class GamePinException(Exception):
 
 class UnknownListenerException(Exception):
     def __init__(self,type) -> None:
-        super().__init__(f"The type: {type} is not a valid listener function, check the docs for valid listeners")
+        super().__init__(f"The type: \"{type}\" is not a valid listener function, check the docs for valid listeners")
 
 class ListenerFunctionException(Exception):
     def __init__(self,type) -> None:
-        super().__init__(f"The listener function with the {type} type has had an error while executing")
+        super().__init__(f"The listener function with the \"{type}\" type has had an error while executing")
 
 class ListenerFunctionParametersException(Exception):
     def __init__(self,type) -> None:
-        super().__init__(f"The listener function with the {type} type does not have any paramaters for an input")
+        super().__init__(f"The listener function with the \"{type}\" type does not have any paramaters for an input")
 
 class ListenerFunctionNotCallableException(Exception):
     def __init__(self,type) -> None:
-        super().__init__(f"The listener function with the {type} type is not callable")
+        super().__init__(f"The listener function with the \"{type}\" type is not callable")
 
 class UnknownException(Exception):
     def __init__(self,error,description) -> None:
-        super().__init__(f"Please Make An Issue Reporting this Exception: {error}, description: {description}")
+        super().__init__(f"Please Make An Issue Reporting this Exception: \"{error}\", description: \"{description}\"")
 
 class SendingException(Exception):
     def __init__(self,input,error) -> None:
-        super().__init__(f"When sending the message: {input} and error occured, {error}")
+        super().__init__(f"When sending the message: \"{input}\" and error occured, \"{error}\"")
 
 class UnknownSessionException(Exception):
     def __init__(self,selfclientid,clientidsent) -> None:
-        super().__init__(f"This error happens mostly when the clientId is incorrect or none; ClientId sent was {clientidsent} and the classes clientid was {selfclientid}")
+        super().__init__(f"This error happens mostly when the clientId is incorrect or none; ClientId sent was \"{clientidsent}\" and the classes clientid was \"{selfclientid}\"")
+
+class AuthBypassFalseError(Exception):
+    def __init__(self,gamepin) -> None:
+        super().__init__(f"The gamepin: \"{gamepin}\" has 2 step join but you have disabled the brute force method")
