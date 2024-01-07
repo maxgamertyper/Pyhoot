@@ -1,10 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 import base64
-import Pyhoot.Exceptions as Exceptions
+from . import Exceptions
 import json as JSON
 
-def Token(gamepin,UA):
+def Token(gamepin:str,UA,check=False):
     if gamepin=="":
         raise Exceptions.GamePinException(gamepin)
     
@@ -35,8 +35,12 @@ def Token(gamepin,UA):
     r = requests.get(f'https://kahoot.it/reserve/session/{gamepin}',headers={"User-Agent":UA})
     
     sourcecode = BeautifulSoup(r.text, 'html.parser').prettify()
-    if str(sourcecode)=="Not found\n":
+    if str(sourcecode)=="Not found\n" and not check:
         raise Exceptions.GamePinException(gamepin)
+    elif str(sourcecode)=="Not found\n" and check:
+        return False
+    elif str(sourcecode)!="Not found\n" and check:
+        return True
     sourcecode=JSON.loads(sourcecode)
 
     challenge=sourcecode.pop("challenge")
