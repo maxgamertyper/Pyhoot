@@ -34,7 +34,7 @@ jobs:
       run: |
         pwd  # Print the current working directory
         ls   # List the contents of the directory
-        cd Pyhoot  # Update to the correct path
+        cd Lib  # Update to the correct path
         python -m build
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
