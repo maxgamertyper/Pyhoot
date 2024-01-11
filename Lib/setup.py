@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 DESCRIPTION = 'A Python library used for the Kahoot! Api'
 LONG_DESCRIPTION = 'A package that allows users to create Kahoot! clients and use the Kahoot! API to their will \n check out https://github.com/maxgamertyper/Pyhoot for more
 
