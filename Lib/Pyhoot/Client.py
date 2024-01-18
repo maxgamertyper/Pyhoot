@@ -82,7 +82,6 @@ class Client():
         func=None
         prev_func=None
         data=self.data.get("data",{})
-        print("\n in \n",self.data)
         
         error = data.get("error") if data.get("error") is not None else self.data.get("error")
 
@@ -106,7 +105,6 @@ class Client():
             if self.latest_listener_call=="question_awaited":
                 prev_func=self.ListeningData["functions"].get("question_started")
             if self.latest_listener_call=="auth_correct":
-                print("claaed")
                 time.sleep(random.randint(50,100)/100)
                 self.send([{"id":self.ClientData["messageId"],"channel":"/service/controller","data":{"id":16,"type":"message","gameid":self.ClientData["gamepin"],"host":"kahoot.it","content":JSON.dumps({"stableIdentifier":self.stableid,"usingNamerator":False})},"clientId":self.ClientData["clientId"],"ext":{}}])
                 self.auth_correct.set()
@@ -165,7 +163,6 @@ class Client():
         try:
             self.sent=msg[0]
             msg = JSON.dumps(msg)
-            print("\n out \n",msg)
             self.web_log.append(msg)
             self.WebSocket.send(msg)
             self.ClientData["messageId"] += 1
