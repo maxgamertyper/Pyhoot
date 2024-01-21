@@ -1,4 +1,0 @@
-requests
-beautifulsoup4
-websocket-client
-fake_useragent
