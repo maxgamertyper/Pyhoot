@@ -1,8 +1,13 @@
-# v1.3 (ideas noted):
+# v1.3 (testing phase):
 * add team mode support
 
+# v1.4 (minor update):
+* fix documentation
+* add github pypi description automation and stuff
+* basically just more readability for users
+* and easier for me to code things and release them
 
-## v1.4+ (ideas noted):
+## v1.5+ (ideas noted):
 * add course support
 * add an answer getter (would not work with random answers and questions)
 * add other connection type support
