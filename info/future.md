@@ -11,7 +11,6 @@
 * add course support
 * add an answer getter (would not work with random answers and questions)
 * add other connection type support
-* add team mode support
 * add other game mode type support
 * add an ability to host a game
 * add an ability to create a game
