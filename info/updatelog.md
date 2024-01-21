@@ -13,3 +13,9 @@
 * fixed change_profile()
 * added crash_lobby()
 * added a 2 step bypass
+
+# v1.2.1:
+* fixed pypi release on github
+
+# v1.2.2:
+* removed annoying print statements
