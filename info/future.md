@@ -7,7 +7,10 @@
 * basically just more readability for users
 * and easier for me to code things and release them
 
-# v1.5+ (ideas noted):
+#V1.5 (ideas noted):
+* add ability to host a game or create a game
+
+# v1.6+ (ideas noted):
 * add course support
 * add an answer getter (would not work with random answers and questions)
 * add other connection type support
