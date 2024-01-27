@@ -6,6 +6,7 @@
 * add github pypi description automation and stuff
 * basically just more readability for users
 * and easier for me to code things and release them
+* imporve code for readibility and use
 
 # V1.5 (ideas noted):
 * add ability to host a game or create a game
