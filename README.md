@@ -8,7 +8,7 @@ https://pypi.org/project/Pyhoot/
 
 pip install Pyhoot
 
-New release in 1994?
+New release in 1996?
 
 ## documentation (will improve later):
 ``` 
