@@ -1,7 +1,7 @@
 # Pyhoot
 This is a library made by MaxGamerTyper to interface with the Kahoot API.
 
-
+New Release in 1996?
 
 # Installation
 https://pypi.org/project/Pyhoot/
