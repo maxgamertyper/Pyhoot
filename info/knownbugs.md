@@ -7,3 +7,4 @@
 
 # minor bugs
 * being able to create false lobbies (the lobby code is valid but nobody can join (stays open for like an hour im guessing))
+* being able to change profiles mid-game
