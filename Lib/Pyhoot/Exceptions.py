@@ -42,10 +42,6 @@ class SendingException(Exception):
     def __init__(self,input,error) -> None:
         super().__init__(f"When sending the message: \"{input}\" and error occured, \"{error}\"")
 
-class UnknownSessionException(Exception):
-    def __init__(self,selfclientid,clientidsent) -> None:
-        super().__init__(f"This error happens mostly when the clientId is incorrect or none; ClientId sent was \"{clientidsent}\" and the classes clientid was \"{selfclientid}\"")
-
 class AuthBypassFalseError(Exception):
     def __init__(self,gamepin) -> None:
         super().__init__(f"The gamepin: \"{gamepin}\" has 2 step join but you have disabled the brute force method")
