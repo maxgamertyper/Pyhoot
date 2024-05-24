@@ -1,9 +1,4 @@
 from Pyhoot.Client import Player
-import time
-import string
-import random
-
-characters=string.ascii_letters + string.digits + string.punctuation
 
 bot=Player(Auth_Brute_Force=True,closeafterdisconnect=True)
     
