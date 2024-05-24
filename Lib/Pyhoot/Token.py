@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import base64
 from . import Exceptions
 import json as JSON
+import time # will be used soon
 
 def Token(gamepin:str,UA,check=False):
     if gamepin=="":
