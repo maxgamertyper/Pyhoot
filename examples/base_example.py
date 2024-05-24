@@ -1,17 +1,17 @@
-from Pyhoot.Client import Client
+from Pyhoot.Client import Player
 import time
+import string
+import random
 
-gamepin=str(input("Enter Gamepin: "))
+characters=string.ascii_letters + string.digits + string.punctuation
 
-bot=Client(gamepin, name="Max")
+bot=Player(Auth_Brute_Force=True,closeafterdisconnect=True)
+    
+# your listener functions here
 
-@bot.event_listener(type="question_started")
-def question(data):
-    bot.random_answer()
+gameid=input("gamepin?")
+name=input("name?")
+bot.start(gameid)
+bot.join(name)
 
-#more listeners in here
-
-
-#bot function calls go either in listeners or after bot.start()
-bot.start()
-bot.join()
+# nothing works here after the WS is closed (working on fixing this)
