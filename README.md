@@ -13,6 +13,7 @@ New release in 1996?
 ## documentation (will improve later):
 
 not relevant information at this moment i will probably add documentation.md on version V1.3.1
+just look at base_example.py in the examples folder for now
 
 ## current V1.3 Plans:
 * V1.3.1 will improve the documentation and the event listener outputs
