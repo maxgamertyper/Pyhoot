@@ -17,6 +17,7 @@ just look at base_example.py in the examples folder for now
 
 ## current V1.3 Plans:
 * V1.3.1 will improve the documentation and the event listener outputs
-* V1.3.2 will add the Host class allowing you to host a game (hopefully) or it will fix the auth bypass
-* V1.3.3 will be whatever doesnt get added in V1.3.2
+* V1.3.2 will add the ability to vote for brainstorming questions
+* V1.3.3 will add the Host class allowing you to host a game (hopefully) or it will fix the auth bypass
+* V1.3.4 will be whatever doesnt get added in V1.3.2
 
