@@ -71,7 +71,7 @@ BaseClient() -> this is not really useful unless you are trying to customize som
 # event listener example
 @bot.event_listener(Ltype="handshake_1") 
 def hand1(data):
-    print(f"handshake1 {data}")
+print(f"handshake1 {data}")
 ```
 
 * **find_game(pin:str)** -> checks to see if the game is running returns True if it is else False
@@ -92,55 +92,55 @@ has some other function that are used in the running of stuff
 
 ##### Joining functions
 
-* **join(*name:str,quizuuid:str,profile:str)** -> 
-requires a username to join with, actually joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet
+* **join(*name:str,quizuuid:str,profile:str)** -> requires a username to join with, actually joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet
 
-* **join_crash(name:str)** ->
-requires a name to join with, joins the hosts game specified in start() but crashes the game
+* **join_crash(name:str)** -> requires a name to join with, joins the hosts game specified in start() but crashes the game
 
-* **forceauth()** ->
-if enabled, this will be automatically activatedd in the join() function, does not work right now
+* **forceauth()** -> if enabled, this will be automatically activatedd in the join() function, does not work right now
 
 ##### Profile Functions
 
 * **profile_generator(avatar:str,cosmetic:str)** ->
+
 requires an avatar and comsmetic item (will update the list on release)
 Warning: some event avatar and cosmetics might be in there but they wont work
 returns the string that switches the avatar, should be sent into update_profile()
 
 ```python
 avatars = [
-    'WHITE_BEAR', 'PENGUIN', 'REINDEER', 'CHRISTMAS_TREE', 'COOKIE', 'BROWN_RAT', 'GROUNDHOG', 'GRAY_RAT', 'MOOSE', 'PUG', 'DOG', 'CAT', 'RABBIT', 'RED_FOX', 'GRAY_FOX', 'BROWN_FOX', 'PANDA', 'FROG', 'OWL', 'CHICKEN', 'FEATHERLESS_CHICKEN', 'GOAT', 'TIGER', 'KOALA', 'KANGAROO', 'HORSE', 'BRAIN', 'UNICORN', 'GREEN_MONSTER', 'PURPLE_MONSTER', 'PINK_MONSTER', 'ZOMBIE', 'SKELETON', 'GLOBE'
+'WHITE_BEAR', 'PENGUIN', 'REINDEER', 'CHRISTMAS_TREE', 'COOKIE', 'BROWN_RAT', 'GROUNDHOG', 'GRAY_RAT', 'MOOSE', 'PUG', 'DOG', 'CAT', 'RABBIT', 'RED_FOX', 'GRAY_FOX', 'BROWN_FOX', 'PANDA', 'FROG', 'OWL', 'CHICKEN', 'FEATHERLESS_CHICKEN', 'GOAT', 'TIGER', 'KOALA', 'KANGAROO', 'HORSE', 'BRAIN', 'UNICORN', 'GREEN_MONSTER', 'PURPLE_MONSTER', 'PINK_MONSTER', 'ZOMBIE', 'SKELETON', 'GLOBE'
 ]
 
 cosmetics = [
-    'PANCAKES', 'CHRISTMAS_HAT', 'MONOCLE', 'SCARF', 'WINTER_HAT', 'EAR_MUFFS', 'SNOW_GOGGLES',  'COLORED_SUNGLASSES', 'SANTA_HAT', 'BEARD', 'TREE_HAT', 'PRESENT_HAT', 'KAHOOT_HAT', 'GLOWER_HAT',  'CROWN', 'VIKING_HAT', 'GRADUATION_CAP', 'COWBOY_HAT', 'WITCH_HAT', 'HEADPHONES', 'HEARTS', 'HEART_GLASSES', 'GOGGLES', 'HARD_HAT', 'EXPLORER_HAT', 'EYEPATCH', 'POWDERED_WIG', 'ALBERT_EINSTIEN', 'HAIR', 'SUNGLASSES', 'TOP_HAT', 'KID_HAT', 'PARTY_HAT', 'FAKE_DISGUISE', 'PACIFIER', 'ICE_CREAM_CONE', 'FOOTBALL_HELMET', 'ASTRONAUT_HELMET'
+'PANCAKES', 'CHRISTMAS_HAT', 'MONOCLE', 'SCARF', 'WINTER_HAT', 'EAR_MUFFS', 'SNOW_GOGGLES',  'COLORED_SUNGLASSES', 'SANTA_HAT', 'BEARD', 'TREE_HAT', 'PRESENT_HAT', 'KAHOOT_HAT', 'GLOWER_HAT',  'CROWN', 'VIKING_HAT', 'GRADUATION_CAP', 'COWBOY_HAT', 'WITCH_HAT', 'HEADPHONES', 'HEARTS', 'HEART_GLASSES', 'GOGGLES', 'HARD_HAT', 'EXPLORER_HAT', 'EYEPATCH', 'POWDERED_WIG', 'ALBERT_EINSTIEN', 'HAIR', 'SUNGLASSES', 'TOP_HAT', 'KID_HAT', 'PARTY_HAT', 'FAKE_DISGUISE', 'PACIFIER', 'ICE_CREAM_CONE', 'FOOTBALL_HELMET', 'ASTRONAUT_HELMET'
 ```
 
-* **update_profile(profile:str)** ->
+* **update_profile(profile:str)** -> 
+
 requires the profile, a string, generated from profile_generator()
 updates the players profile
 
-* **profile_crash()** ->
-crashes the game by changing the profile of the player
+* **profile_crash()** -> crashes the game by changing the profile of the player
 
 ##### Answer Functions
 
-* **submit_answer(*answer,delay:int=0)** ->
+* **submit_answer(*answer,delay:int=0)** -> submits an asnwer
+
 requires the answer and has an optional delay
 answer of 0 is red, 1 is blue, 2 is yellow, 3 is green, auto corrects to the numbers if you type in the color
 
-* **answer_crash()** ->
+* **answer_crash()** -> 
+
 crashes the game through answering a question
 
 * **random_answer(delay:int=0)** ->
+
 can have a custom delay to look less like a bot if wanted
 just sends a random answer (put in the question_started listener function)
 
 ##### Other Functions
 
-* **disconnect()** ->
-has the player leave the game
+* **disconnect()** -> has the player leave the game
 
 * **Any Function Avaliable in the BaseClient Class**
 
@@ -148,17 +148,13 @@ has the player leave the game
 
 * **Heartbeat** -> will return the heartbeat count once a heartbeat is sent, automatically returns the hearbeat call
 
-* **handshake1** -> 
-returns True once the handshake responds
+* **handshake1** -> returns True once the handshake responds
 
-* **handshake2** -> 
-returns True once the second handshake responds
+* **handshake2** -> returns True once the second handshake responds
 
-* **profile_updated** -> 
-returns True if the profile updated else it returns False
+* **profile_updated** -> returns True if the profile updated else it returns False
 
-* **disconnected** -> 
-returns in the format {"Reason":Reason}
+* **disconnected** -> returns in the format {"Reason":Reason}
 
 ```python
 #Set reasons are:
