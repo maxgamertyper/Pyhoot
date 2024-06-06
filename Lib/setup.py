@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 VERSION = '1.3.1'
 DESCRIPTION = 'A Python library used for the Kahoot! Api'
 
-with open("..README.md"), 'r') as rm:
+with open("..README.md", 'r') as rm:
     Readme=rm.read()
     rm.close()
     
