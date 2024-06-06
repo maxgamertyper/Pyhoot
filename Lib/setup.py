@@ -4,7 +4,11 @@ import os
 VERSION = '1.3.1'
 DESCRIPTION = 'A Python library used for the Kahoot! Api'
 
-with open("../README.md", 'r') as rm:
+this_directory = os.path.abspath(os.path.dirname(__file__))
+
+readme_path = os.path.join(this_directory, '..', 'README.md')
+
+with open(readme_path, 'r') as rm:
     Readme=rm.read()
     rm.close()
     
