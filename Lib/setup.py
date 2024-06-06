@@ -1,17 +1,11 @@
 from setuptools import setup, find_packages
 
-VERSION = '1.3.0'
+VERSION = '1.3.1'
 DESCRIPTION = 'A Python library used for the Kahoot! Api'
-LONG_DESCRIPTION = "A package that allows users to create Kahoot! clients and use the Kahoot! API to their will.\nCheck out https://github.com/maxgamertyper/Pyhoot for more information. \n \n # Documentation: \n"
-with open("./Pyhoot/info/Documentation.md") as doc:
-    Documentation=doc.read()
-    doc.close()
-    LONG_DESCRIPTION += Documentation + "\n \n # ChangeLog: "
-with open("./Pyhoot/info/ChangeLog.md") as cl:
-    ChangeLog=cl.read()
-    cl.close()
-LONG_DESCRIPTION += ChangeLog
-
+with open("./readme.md") as rm:
+    Readme=rm.read()
+    rm.close()
+LONG_DESCRIPTION = Readme
 
 setup(
     name="Pyhoot",
@@ -22,9 +16,9 @@ setup(
     long_description=LONG_DESCRIPTION,
     packages=find_packages(),
     install_requires=['requests', 'beautifulsoup4', 'websocket-client', 'fake_useragent'],
-    keywords=['python', 'Kahoot', 'pyhoot', 'bot', 'flooder', 'Kahoot!'],
+    keywords=['Python', 'Kahoot', 'Pyhoot', 'bot', 'flooder', 'Kahoot!','Library',"Api","Kahoot api","Kahoot Python"],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "Operating System :: Unix",
