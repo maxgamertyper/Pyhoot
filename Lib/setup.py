@@ -16,6 +16,7 @@ setup(
     author_email="maxa5302@gmail.com",
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
     packages=find_packages(),
     install_requires=['requests', 'beautifulsoup4', 'websocket-client', 'fake_useragent'],
     keywords=['Python', 'Kahoot', 'Pyhoot', 'bot', 'flooder', 'Kahoot!','Library',"Api","Kahoot api","Kahoot Python"],
