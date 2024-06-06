@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import base64
 from . import Exceptions
 import json as JSON
-import time # will be used soon
+import time
 
 def Token(gamepin:str,UA,check=False):
     if gamepin=="":
@@ -33,7 +33,7 @@ def Token(gamepin:str,UA,check=False):
             token += chr(decodedChar)
         return token
 
-    r = requests.get(f'https://kahoot.it/reserve/session/{gamepin}',headers={"User-Agent":UA})
+    r = requests.get(f'https://kahoot.it/reserve/session/{gamepin}/?{time.time()}',headers={"User-Agent":UA})
     
     sourcecode = BeautifulSoup(r.text, 'html.parser').prettify()
     if str(sourcecode)=="Not found\n" and not check:
