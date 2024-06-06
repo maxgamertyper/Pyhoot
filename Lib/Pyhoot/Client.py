@@ -178,7 +178,7 @@ class Player(BaseClient):
         super().__init__()
         self.token=None
         self.random_text=random_text
-        self.ListeningTypes=["heartbeat","handshake_1","handshake_2","profile_updated", "disconnected", "question_started", "question_ended", "question_awaited", "quiz_started", "quiz_ended", "unknown_message","joined","auth_reset","auth_correct","auth_incorrect"]
+        self.ListeningTypes=["heartbeat","handshake1","handshake2","profile_updated", "disconnected", "question_started", "question_ended", "quiz_started", "quiz_ended", "unknown_message","joined","auth_reset","auth_correct","auth_incorrect"]
         self.joined=threading.Event()
         self.quizuuid=None
         self.msghandler=self.MessageHandler
@@ -221,9 +221,6 @@ class Player(BaseClient):
         self.send(login_packet)
         self.send(login_followup_packet)
         
-        if self.authbrute:
-            self.forceauth()
-        
         return True
             
     def join_crash(self,name:str):
@@ -236,26 +233,6 @@ class Player(BaseClient):
         login_followup_packet=self.packet_factory("SERVICE_CONTROLLER",login_follup_data)
         self.send(login_packet)
         self.send(login_followup_packet)
-        
-    def forceauth(self):
-        time.sleep(5)
-        authcodes=[(0, 1, 2, 3), (0, 1, 3, 2), (0, 2, 1, 3), (0, 2, 3, 1), (0, 3, 1, 2), (0, 3, 2, 1), (1, 0, 2, 3), (1, 0, 3, 2), (1, 2, 0, 3), (1, 2, 3, 0), (1, 3, 0, 2), (1, 3, 2, 0), (2, 0, 1, 3), (2, 0, 3, 1), (2, 1, 0, 3), (2, 1, 3, 0), (2, 3, 0, 1), (2, 3, 1, 0), (3, 0, 1, 2), (3, 0, 2, 1), (3, 1, 0, 2), (3, 1, 2, 0), (3, 2, 0, 1), (3, 2, 1, 0)]
-        self.auth_reset.wait()
-        for sequence in authcodes:
-                if self.auth_correct.is_set():
-                    break
-                packet = [{
-                    "channel":self.WebChannels["SERVICE_CONTROLLER"],
-                    "data":
-                    {"id":50,
-                     "type":"message",
-                     "gameid":self.gamepin,
-                     "host":"kahoot.it",
-                     "content":JSON.dumps({"sequence":''.join(map(str, sequence))})},
-                     "clientId":str(self.clientid),
-                     "ext":{}}]
-                self.send(packet)
-                time.sleep(.22)
         
     def profile_generator(self,avatar:str,cosmetic:str):
         avatar_map={'WHITE_BEAR': 2350,'PENGUIN': 2300,'REINDEER': 5373,'CHRISTMAS_TREE': 5374,'COOKIE': 5375,'BROWN_RAT': 1800,'GROUNDHOG': 1600,'GRAY_RAT': 4000,'MOOSE': 1500,'PUG': 1700,'DOG': 1700, 'CAT': 1750,'RABBIT': 1850,'RED_FOX': 1900,'GRAY_FOX': 1950,'BROWN_FOX': 2000,'PANDA': 2050,'FROG': 2100,'OWL': 2150,'CHICKEN': 2200,'FEATHERLESS_CHICKEN': 2250,'GOAT': 2400,'TIGER': 2500,'KOALA': 2550,'KANGAROO': 2600,'HORSE': 2650,'BRAIN': 2950,'UNICORN': 2700,'GREEN_MONSTER': 2800,'PURPLE_MONSTER': 2850,'PINK_MONSTER': 2900,'ZOMBIE': 3000,'SKELETON': 3050,'GLOBE': 2750,}
@@ -318,10 +295,7 @@ class Player(BaseClient):
                 return self.ListenerFunction(ListeningIds[id],True,True)
             elif id==51: # auth is incorrect
                 return self.ListenerFunction(ListeningIds[id],True,False)
-            elif id==2:
-                self.questionindex=int(JSON.loads(data.get("content")).get("gameBlockIndex"))
-                self.question_data=self.data
-            elif id==10:
+            elif id==10: # disconnected
                 if data.get("content")=="{\"kickCode\":1}":
                     self.ListenerFunction("disconnected",True,{"Reason":"Host Kicked Player"})
                     self.disconnected=True
@@ -329,17 +303,96 @@ class Player(BaseClient):
                         self.close()
                     return
             elif id==9: #quiz_started
-                # beta
-                return self.ListenerFunction(ListeningIds[id],True,msg)
-            elif id==8: # question_ended
-                # beta
-                return self.ListenerFunction(ListeningIds[id],True,msg)
+                info=JSON.loads(msg.get("data").get("content"))
+                upcomingqdata=info.get("upcomingGameBlockData")
+                return_data={
+                    "QuestionCount":info.get("gameBlockCount"),
+                }
+                for i,v in enumerate(upcomingqdata):
+                    PointType= "Double" if v.get("pointsMultiplier")==2 else "Standard" if v.get("pointsMultiplier")==1 else "None"
+                    QuestionType=v.get("type") if v.get("layout") not in ["TRUE_FALSE","MEDIA_BIG_TITLE"] else "True or False" if v.get("layout")=="TRUE_FALSE" else "Slide"
+                    if i==0:
+                        return_data["UpcomingQuestionData"]={
+                            "type":QuestionType,
+                            "PointType": PointType,
+                            "media": v.get("media")
+                        }
+                    else:
+                        return_data[f"Question{i}"]={
+                            "type":QuestionType,
+                            "PointType": PointType,
+                        }
+                return self.ListenerFunction(ListeningIds[id],True,return_data)
             elif id==13: #quiz_ended
-               #beta
-                return self.ListenerFunction(ListeningIds[id],True,msg)
-            if id==2: #question_started
-                #beta
-                return self.ListenerFunction(ListeningIds[id],True,msg)
+                info=JSON.loads(msg.get("data").get("content"))
+                return_data={
+                    "Rank": info.get("rank"),
+                    "MedalType": info.get("podiumMedalType"),
+                    "QuizName": info.get("quizTitle"),
+                    "QuizId": info.get("quizId"),
+                    "IsNonPointQuiz": info.get("isOnlyNonPointGameBlockKahoot"),
+                    "OrganizationId": info.get("organisationId"),
+                    "PrimaryUsage": info.get("primaryUsage"),
+                    "QuizCoverData":{
+                        "QuizCoverAltText": info.get("coverMetadata").get("altText"),
+                        "QuizCoverType": info.get("coverMetadata").get("contentType"),
+                        "QuizCoverOrigin": info.get("coverMetadata").get("origin"),
+                        "QuizCoverSize": (info.get("coverMetadata").get("width"),info.get("coverMetadata").get("height"))
+                    },
+                    "PlayerStatistics": {
+                        "IncorrectAnswers": info.get("incorrectCount"),
+                        "CorrectAnswers": info.get("correctCount"),
+                        "TotalScore": info.get("totalScore")
+                    }
+                }
+                return self.ListenerFunction(ListeningIds[id],True,return_data)
+            elif id==2: #question_started
+                self.questionindex=int(JSON.loads(data.get("content")).get("gameBlockIndex"))
+                self.question_data=self.data
+                info=JSON.loads(msg.get("data").get("content"))
+                questiontype=info.get("type")
+                return_data={
+                    "QuestionNumber": info.get("gameBlockIndex"),
+                    "QuizQuestionCount": info.get("totalGameBlockCount"),
+                    "QuestionTime": info.get("timeAvailable"),
+                    "NumberOfChoices": info.get("numberOfChoices"),
+                    "SliderData": None if questiontype != "slider" else {
+                        "Unit": info.get("unit"),
+                        "Minimum": info.get("minRange"),
+                        "Maximum": info.get("maxRange"),
+                        "Step": info.get("step")
+                    },
+                    "BrainstormData": None if questiontype != "brainstorming" else {
+                    "NumberOfAnswers": info.get("numberOfAnswersAllowed"),
+                    "MaximumAnswerLength": info.get("allowedCharacterLengthPerAnswer")
+                    },
+                    "DropPinData": None if questiontype != "drop_pin" else {
+                        "VideoData": info.get("video"),
+                        "ImageURL": info.get("image"),
+                        "ImageData": info.get("imageMetadata"),
+                        "Media": info.get("media")
+                    }
+                }
+                return self.ListenerFunction(ListeningIds[id],True,return_data)
+            elif id==8: # question_ended
+                info=JSON.loads(msg.get("data").get("content"))
+                return_data={
+                    "Correct": info.get("isCorrect"),
+                    "CorrectAnswer": info.get("correctChoices"),
+                    "LeaderboardRank": info.get("rank"),
+                    "LeaderboardScore": info.get("totalScore"),
+                    "PointsData":{
+                        "PointsWithBonuses": info.get("pointsData").get("totalPointsWithBonuses"),
+                        "QuestionPoints": info.get("pointsData").get("questionPoints")
+                    },
+                    "AnswerStreak": info.get("pointsData").get("answerStreakPoints").get("streakLevel"),
+                    "EndedQuestion": int(info.get("pointsData").get("lastGameBlockIndex"))+1,
+                    "NemesisData": None if "nemesis" not in info else {
+                        "NemesisName": info.get("nemesis").get("name"),
+                        "NemesisScore": info.get("nemesis").get("totalScore"),
+                    }
+                }
+                return self.ListenerFunction(ListeningIds[id],True,return_data)
             return self.ListenerFunction(ListeningIds[id],True,msg)
             
     def question_content_factory(self,answer,lag):
@@ -455,7 +508,7 @@ class Player(BaseClient):
             answer={"x":(random.randint(0,100000000))/1000000,"y":(random.randint(0,100000000))/1000000}
         elif question_type=="jumble":
             options=int(content_data.get("numberOfChoices"))
-            answer=list(random.choice(list(itertools.permutations(options))))
+            answer=list(random.choice(list(itertools.permutations([i for i in range(options)]))))
         elif question_type=="multiple_select_poll" or question_type=="multiple_select_quiz":
             options=int(content_data.get("numberOfChoices"))
             results=[]
