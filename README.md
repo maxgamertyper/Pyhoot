@@ -20,19 +20,23 @@ pip install Pyhoot
 https://www.pepy.tech/projects/pyhoot
 
 ## current V1.3 Plans:
+* V1.3.1 will improve the documentation and the event listener outputs
 * V1.3.2 will add the ability to vote for brainstorming questions
-* V1.3.3 will fix the auth bypass hopefully
+* V1.3.3 will add the Host class allowing you to host a game (hopefully) or it will fix the auth bypass
+* V1.3.4 will be whatever doesn't get added in V1.3.2
 
 ## Future Updates
 
 ### v1.4 (minor update):
-* add ability to support hosting games
+* fix documentation
+* add github pypi description automation and stuff
+* improve listener function output
 
 ### v1.5 (Revising):
 * add team mode support
 
 ### V1.6 (ideas noted):
-* add pypi github automation and stuff
+* add ability to host a game or create a game
 
 ### v1.6+ (ideas noted):
 * add course support
@@ -308,3 +312,13 @@ disconnected -> returns in {"Reason": Reason} format with the reasons being: "Ho
 
 Thanks!
 V1.3.1 should be out fairly soon, sorry for the wait kind of lost courage!
+
+### V1.3.1:
+I updated the readme.md file to include everything in the info directory
+removed the info directory
+
+Actually added documentation finally
+
+Updated the rest of the listener functions to have relevant information (check the documentation for the updates)
+
+V1.3.2 will add the ability to vote for brainstorming questions, hopefully, wont take too long
