@@ -102,9 +102,6 @@ class BaseClient():
     
     def on_open(self,ws):
         self.init_connection(ws)
-    
-    def on_close(self,ws):
-        print("Websocket Closed")
 
     def on_message(self,ws, message):
         self.BaseMessageHandler(message)
@@ -130,8 +127,6 @@ class BaseClient():
             reason = str(data.get("description"))
             if reason == "Duplicate name":
                 self.exception_handler(Exceptions.NameTakenException,self.name)
-            elif error=="402::session_unknown":
-                self.exception_handler(Exceptions.UnknownSessionException,self.clientid,self.sent.get("clientId"))
             else:
                 self.exception_handler(Exceptions.UnknownException,error,reason)
             
@@ -178,7 +173,7 @@ class Player(BaseClient):
         super().__init__()
         self.token=None
         self.random_text=random_text
-        self.ListeningTypes=["heartbeat","handshake1","handshake2","profile_updated", "disconnected", "question_started", "question_ended", "quiz_started", "quiz_ended", "unknown_message","joined","auth_reset","auth_correct","auth_incorrect"]
+        self.ListeningTypes=["heartbeat","handshake1","handshake2","profile_updated", "disconnected", "question_started", "question_ended", "quiz_started", "quiz_ended", "unknown_message","joined","auth_reset","auth_correct","auth_incorrect","brainstorm_voting"]
         self.joined=threading.Event()
         self.quizuuid=None
         self.msghandler=self.MessageHandler
@@ -189,6 +184,7 @@ class Player(BaseClient):
         #question data
         self.questionindex=0
         self.question_data=None
+        self.BrainstormCandidates=None
         #"safety"
         self.cad=closeafterdisconnect
         self.disconnected=False
@@ -234,11 +230,14 @@ class Player(BaseClient):
         self.send(login_packet)
         self.send(login_followup_packet)
         
+    def forceauth(self):
+        return "broken"
+        
     def profile_generator(self,avatar:str,cosmetic:str):
-        avatar_map={'WHITE_BEAR': 2350,'PENGUIN': 2300,'REINDEER': 5373,'CHRISTMAS_TREE': 5374,'COOKIE': 5375,'BROWN_RAT': 1800,'GROUNDHOG': 1600,'GRAY_RAT': 4000,'MOOSE': 1500,'PUG': 1700,'DOG': 1700, 'CAT': 1750,'RABBIT': 1850,'RED_FOX': 1900,'GRAY_FOX': 1950,'BROWN_FOX': 2000,'PANDA': 2050,'FROG': 2100,'OWL': 2150,'CHICKEN': 2200,'FEATHERLESS_CHICKEN': 2250,'GOAT': 2400,'TIGER': 2500,'KOALA': 2550,'KANGAROO': 2600,'HORSE': 2650,'BRAIN': 2950,'UNICORN': 2700,'GREEN_MONSTER': 2800,'PURPLE_MONSTER': 2850,'PINK_MONSTER': 2900,'ZOMBIE': 3000,'SKELETON': 3050,'GLOBE': 2750,}
-        cosmetic_map = {'PANCAKES': 3950, 'CHRISTMAS_HAT': 5372, 'MONOCLE': 1250, 'SCARF': 2750, 'WINTER_HAT': 5371, 'EAR_MUFFS': 5370, 'SNOW_GOGGLES': 4100, 'COLORED_SUNGLASSES': 4050, 'SANTA_HAT': 5368, 'BEARD': 5367, 'TREE_HAT': 5366, 'PRESENT_HAT': 5365, 'KAHOOT_HAT': 1550, 'GLOWER_HAT': 3100, 'CROWN': 3150, 'VIKING_HAT': 3200, 'GRADUATION_CAP': 3250, 'COWBOY_HAT': 3300, 'WITCH_HAT': 3350, 'HEADPHONES': 3400, 'HEARTS': 3450, 'HEART_GLASSES': 3500, 'GOGGLES': 3550, 'HARD_HAT': 5300, 'EXPLORER_HAT': 5309, 'EYEPATCH': 3600, 'POWDERED_WIG': 1300, 'ALBERT_EINSTIEN': 1350, 'HAIR': 1400, 'SUNGLASSES': 3650, 'TOP_HAT': 3700, 'KID_HAT': 3750, 'PARTY_HAT': 3800, 'FAKE_DISGUISE': 3850, 'PACIFIER': 3900, 'ICE_CREAM_CONE': 4000, 'FOOTBALL_HELMET': 4150, 'ASTRONAUT_HELMET': 4200}
-        avatarid=avatar_map.get(avatar.upper())
-        cosmeticid=cosmetic_map.get(cosmetic.upper())
+        avatar_map = {'POLAR_BEAR': 2350, 'PENGUIN': 2300, 'SNOWMAN': 5380, 'WOODCHUCK': 1600, 'MOOSE': 1500, 'DOG': 1700, 'CAT': 1750, 'MOUSE': 1800, 'RABBIT': 1850, 'FOX': 1900, 'WOLF': 1950, 'RACCOON': 2000, 'PANDA': 2050, 'FROG': 2100, 'OWL': 2150, 'CHICKEN': 2200, 'TURKEY': 2250, 'CAMEL': 2400, 'TIGER': 2500, 'KOALA': 2550, 'KANGAROO': 2600, 'HORSE': 2650, 'UNICORN': 2700, 'DRAGON': 2800, 'MONSTER': 2850, 'FAUN': 2900, 'BRAIN': 2950, 'ZOMBIE': 3000, 'SKELETON': 3050, 'PLANET_EARTH': 2750}
+        cosmetic_map = {'PROPELLER_HAT': 3750, 'PARTY_HAT': 3800, 'DISGUISE': 3850, 'PACIFIER': 3900, 'PANCAKES': 3950, 'ICE_CREAM': 4000, 'FOOTBALL_HELMET': 4150, 'ASTRONAUT_HELMET': 4200, 'WINTER_HUNTING_HAT': 5378, 'REINDEER_HAT': 5377, 'ORANGE_HAT': 5376, 'SNOWFLAKE_HAT': 5370, 'EAR_MUFFS': 5369, '2024_GLASSES': 5379, 'DRAGON_MASK': 5402, 'REFLECTIVE_GOGGLES': 4100, 'COLORFUL_SUNGLASSES': 4050, 'SCARF': 5371, 'KAHOOT_HAT': 1550, 'FLOWER_HAT': 3100, 'CROWN': 3150, 'VIKING_HELMET': 3200, 'GRADUATION_CAP': 3250, 'COWBOY_HAT': 3300, 'WITCH_HAT': 3350, 'HEADPHONES': 3400, 'HEARTS': 3450, 'HEART_SUNGLASSES': 3500, 'GOGGLES': 3550, 'HARD_HAT': 5300, 'SAFARI_HAT': 5309, 'EYEPATCH': 3600, 'MONOCOLE': 1250, 'POWDERED_WIG': 1300, 'EINSTEIN_WIG': 1350, 'HAIR': 1400, 'SUNGLASSES': 3650, 'TOP_HAT': 3700}
+        avatarid=avatar_map.get(avatar.replace(" ","_").upper())
+        cosmeticid=cosmetic_map.get(cosmetic.replace(" ","_").upper())
         return {"avatar":{"type":avatarid,"item":cosmeticid}}
     
     def update_profile(self,profile):
@@ -281,10 +280,11 @@ class Player(BaseClient):
                 return self.ListenerFunction("joined",True,{"Error":"Duplicate name"})
             return self.ListenerFunction("joined",True,True) # call the listener joined function
         
-        ListeningIds={10:"disconnected",2:"question_started",8:"question_ended",9:"quiz_started",13:"quiz_ended",53:"auth_reset",52:"auth_correct",51:"auth_incorrect"}
+        ListeningIds={10:"disconnected",2:"question_started",8:"question_ended",9:"quiz_started",13:"quiz_ended",53:"auth_reset",52:"auth_correct",51:"auth_incorrect",41:"brainstorm_voting"}
         id=data.get("id")
         
         if id in list(ListeningIds.keys()):
+            info=JSON.loads(msg.get("data").get("content"))
             if id==53: # if the auth is reset
                 self.auth_reset.set()
                 time.sleep(1)
@@ -303,7 +303,6 @@ class Player(BaseClient):
                         self.close()
                     return
             elif id==9: #quiz_started
-                info=JSON.loads(msg.get("data").get("content"))
                 upcomingqdata=info.get("upcomingGameBlockData")
                 return_data={
                     "QuestionCount":info.get("gameBlockCount"),
@@ -324,7 +323,6 @@ class Player(BaseClient):
                         }
                 return self.ListenerFunction(ListeningIds[id],True,return_data)
             elif id==13: #quiz_ended
-                info=JSON.loads(msg.get("data").get("content"))
                 return_data={
                     "Rank": info.get("rank"),
                     "MedalType": info.get("podiumMedalType"),
@@ -349,9 +347,9 @@ class Player(BaseClient):
             elif id==2: #question_started
                 self.questionindex=int(JSON.loads(data.get("content")).get("gameBlockIndex"))
                 self.question_data=self.data
-                info=JSON.loads(msg.get("data").get("content"))
                 questiontype=info.get("type")
                 return_data={
+                    "QuestionType": info.get("type") if info.get("layout") not in ["TRUE_FALSE","MEDIA_BIG_TITLE"] else "True or False" if info.get("layout")=="TRUE_FALSE" else "Slide",
                     "QuestionNumber": info.get("gameBlockIndex"),
                     "QuizQuestionCount": info.get("totalGameBlockCount"),
                     "QuestionTime": info.get("timeAvailable"),
@@ -375,7 +373,6 @@ class Player(BaseClient):
                 }
                 return self.ListenerFunction(ListeningIds[id],True,return_data)
             elif id==8: # question_ended
-                info=JSON.loads(msg.get("data").get("content"))
                 return_data={
                     "Correct": info.get("isCorrect"),
                     "CorrectAnswer": info.get("correctChoices"),
@@ -393,6 +390,10 @@ class Player(BaseClient):
                     }
                 }
                 return self.ListenerFunction(ListeningIds[id],True,return_data)
+            elif id==41: # Brainstorm Voting Started
+                candidates=info.get("candidates")
+                self.BrainstormCandidates=candidates
+                return self.ListenerFunction(ListeningIds[id],True,{"Candidates":candidates})
             return self.ListenerFunction(ListeningIds[id],True,msg)
             
     def question_content_factory(self,answer,lag):
@@ -488,13 +489,12 @@ class Player(BaseClient):
         return "Sent (only works when a question is present)"
     
     def submit_answer(self,answer,delay:int=0):
-        lag=round(random.random() * 60 + 5) + (delay*100)
         answer=0 if answer=="red" else answer
         answer=1 if answer=="blue" else answer
         answer=2 if answer=="yellow" else answer
         answer=3 if answer=="green" else answer
         time.sleep(delay+.25)
-        packet=self.question_packet_factory(answer,lag)
+        packet=self.question_packet_factory(answer,delay)
         self.send(packet)
         self.questionindex+=1
 
@@ -536,3 +536,42 @@ class Player(BaseClient):
     
     def profile_crash(self):
         self.update_profile(None)
+        
+    def FinishBrainstorming(self):
+        finishbrainstorm_packet=[{
+        "channel":self.WebChannels["SERVICE_CONTROLLER"],
+        "data":{
+            "gameid":self.gamepin,
+            "type":"message",
+            "host":"kahoot.it",
+            "id":92,
+            "content":"{\"areAnswersSubmitted\":true}"
+            },
+        "clientId":self.clientid,
+        "ext":{}
+        }]
+        self.send(finishbrainstorm_packet)
+        
+    def BrainstormVote(self,vote:bool,OptionID:int):
+        BrainstormVote=[{
+            "channel":self.WebChannels["SERVICE_CONTROLLER"],
+            "data":{
+                "gameid":self.gamepin,
+                "type":"message",
+                "host":"kahoot.it",
+                "id":42,
+                "content":JSON.dumps({"opinion":1 if vote is True else 0,"groupId":OptionID})},
+            "clientId":self.clientid,
+            "ext":{}
+            }]
+        self.send(BrainstormVote)
+    
+    def RandomBrainstormVote(self,delay:int=.5):
+        votes=[]
+        for i in self.BrainstormCandidates:
+            vote=random.choice([True,False])
+            self.BrainstormVote(vote,i["id"])
+            i["vote"]=vote
+            votes.append(i)
+            time.sleep(delay)
+        return votes
