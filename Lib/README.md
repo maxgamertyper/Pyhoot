@@ -7,6 +7,8 @@ Check out https://github.com/maxgamertyper/Pyhoot for more information or help.
 
 This is a library made by MaxGamerTyper1 to interface with the Kahoot API.
 
+Pyjoot is a library to interact with the Kahoot API. Pyhoot supports joining and interacting with quizzes and all of their functions excluding team mode.
+
 New Release in 1996?
 
 ## Installation
@@ -24,20 +26,23 @@ https://www.pepy.tech/projects/pyhoot
 
 ## Future Updates
 
-### v1.4 (No Progress):
+### V1.4 (No Progress):
 * V1.4.1 will rename the functions so that V1.3.3 doesnt have weird function names compared to V1.3.2
 * add team mode support
 
-### v1.5 (Little Progress):
-* add ability to host a game or create a game
+### V1.5 and V1.6 (Little Progress):
+* cant decide
+* add ability to host a game or create a game 
+* add course support 
 
-### v1.5+ (ideas noted):
-* add course support
+### V1.6+ (ideas noted):
+* add proxy support (not sure when this would happen) 
 * add an answer getter (would not work with random answers and questions)
 * add other connection type support
 * add other game mode type support
 * add an ability to host a game
 * add an ability to create a game
+* maybe add events for K!AntiBot extension
 
 
 ## Documentation
@@ -85,7 +90,7 @@ has some other function that are used in the running of stuff
 
 ##### Joining functions
 
-* **join(*name:str,quizuuid:str,profile:str)** -> requires a username to join with, actually joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet
+* **join(name:str,quizuuid:str,profile:str)** -> requires a username to join with, actually joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet
 
 * **join_crash(name:str)** -> requires a name to join with, joins the hosts game specified in start() but crashes the game
 
@@ -119,7 +124,7 @@ updates the players profile
 
 ##### Answer Functions
 
-* **submit_answer(*answer,delay:int=0)** -> submits an asnwer
+* **submit_answer(answer,delay:int=0)** -> submits an asnwer
 
 requires the answer and has an optional delay
 answer of 0 is red, 1 is blue, 2 is yellow, 3 is green, auto corrects to the numbers if you type in the color
@@ -133,7 +138,7 @@ crashes the game through answering a question
 can have a custom delay to look less like a bot if wanted
 just sends a random answer (put in the question_started listener function)
 
-#### **Brainstorm Frunctions**
+#### **Brainstorm Functions**
 
 * **FinishBrainstorming()** ->
 
@@ -149,6 +154,16 @@ you need to vote for all options for the game to register your answer as complet
 
 Votes Randomly for brainstorm candidates
 has a delay argument that is optional to include, default is .5
+
+#### **Auth / 2-step-join functions**
+
+* **auth_brute()** ->
+brute forces the 2-step-join
+
+* **auth_answer(sequence)** ->
+submits the sequence provided as the answer to the 2-step-join
+sequence has to be numbers of values 0-3 or else it will always be wrong
+sequence can be anything that turns into a list from list()
 
 ##### Other Functions
 
@@ -271,6 +286,7 @@ QuestionData={"type":QuestionType,"PointType": PointType}
 ```python
 #set error:
 {"Error":"Duplicate name"}
+{"Error":"Game Locked"}
 ```
 * **auth_reset** ->
 returns True when the auth is reset
@@ -280,6 +296,9 @@ returns True when the auth is correct
 
 * **auth_incorrect** ->
 returns False when the auth is incorrect
+
+* **auth_login** ->
+returns True when the auth is correct and the bot has logged in the game
 
 * **brainstorm_voting** ->
 returns the voting candidates in a list, this is automatically stored in the bot at bot.BrainstormCandidates
@@ -297,11 +316,13 @@ returns the voting candidates in a list, this is automatically stored in the bot
 
 ## Found Bugs
 
+I could fix all of these for kahoot if they want to reach out! (maybe not false lobbies since idk how that works yet)
+
 ### severe bugs
 * being able to crash lobbies
 
 ### decent bugs
-* having infinite name length (have 4 bots with 80 char names and it fills the screen)
+* having infinite name length
 * bypasses name generator (namerator)
 
 ### minor bugs
@@ -370,3 +391,19 @@ V1.3.3 should fix the authentication brute force.
 
 V1.4.1 will just be renaming functions as I like the format more and dont want 1.3.3 to be an outlier compared to 1.3.*. 
 Ex: profile_generator -> GenerateProfile, random_answer -> RandomAnswer
+
+### V1.3.3:
+Fixed the auth / 2-step-join brute force, can be disabled
+
+added functions:
+auth_brute() (this is auto used on the join function if auth_brute_force is set to True)
+auth_answer(sequence) (the sequence can be anything as long as it can be turned into a list)
+
+added new joined result {"Result":False,"Reason":"Game Locked"} (this happens when trying to join the game but its locked)
+
+added the "auth_login" listener function for once the auth is completed and the bot has joined, returns True
+
+updated documentation and readme to current release
+
+V1.4.1 will just be renaming functions as I like the format more
+Ex: profile_generator -> GenerateProfile, random_answer -> RandomAnswer (CamelCase, this will also happen with Listener Functions)
