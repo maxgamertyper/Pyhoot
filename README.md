@@ -7,7 +7,7 @@ Check out https://github.com/maxgamertyper/Pyhoot for more information or help.
 
 This is a library made by MaxGamerTyper1 to interface with the Kahoot API.
 
-Pyjoot is a library to interact with the Kahoot API. Pyhoot supports joining and interacting with quizzes and all of their functions excluding team mode.
+Pyhoot is a library to interact with the Kahoot API. Pyhoot supports joining and interacting with quizzes and all of their functions excluding team mode.
 
 New Release in 1996?
 
@@ -21,26 +21,29 @@ pip install Pyhoot
 
 https://www.pepy.tech/projects/pyhoot
 
-## current V1.3 Plans:
-* V1.3.3 will fix the auth bypass
+## current V1.4 Plans:
+* V1.4.1 will add joining as a team
+* V1.4.2 will add a crash
 
 ## Future Updates
 
-### V1.4 (No Progress):
-* V1.4.1 will rename the functions so that V1.3.3 doesnt have weird function names compared to V1.3.2
+### V1.4 (Little Progress):
+* V1.4.0 will rename the functions so that V1.3.3 doesnt have weird function names compared to V1.3.2
 * add team mode support
 
 ### V1.5 and V1.6 (Little Progress):
 * cant decide
 * add ability to host a game or create a game 
-* add course support 
+* add course support (im thinking this rn)
+
+### V1.7 (no progress):
+* make it so that code will run after bot.join() (sorry this doesnt work rn)
 
 ### V1.6+ (ideas noted):
 * add proxy support (not sure when this would happen) 
 * add an answer getter (would not work with random answers and questions)
 * add other connection type support
 * add other game mode type support
-* add an ability to host a game
 * add an ability to create a game
 * maybe add events for K!AntiBot extension
 
@@ -55,24 +58,24 @@ Player() -> the base bot class, is used to join the kahoot games
 BaseClient() -> this is not really useful unless you are trying to customize something
 
 ### BaseClient Class functions:
-* **pong()** -> used to return the websockets Heartbeat ACK connection, enabled by default
+* **Pong()** -> used to return the websockets Heartbeat ACK connection, enabled by default
 
-* **time()** -> used in some websocket messages, returns time.time() * 1000
+* **Time()** -> used in some websocket messages, returns time.time() * 1000
 
-* **kill()** -> kills the websocket thread (i dont think this works)
+* **Kill()** -> kills the websocket thread (i dont think this works)
 
-* **close()** -> closes the websocket thread (i dont think this works)
+* **Close()** -> closes the websocket thread (i dont think this works)
 
 * **EventListenerDecorator** -> sets a function to be an event listener
 
 ```python
 # event listener example
-@bot.event_listener(Ltype="handshake_1") 
+@bot.EventListener(Ltype="Handshake1") 
 def hand1(data):
 print(f"handshake1 {data}")
 ```
 
-* **find_game(pin:str)** -> checks to see if the game is running returns True if it is else False
+* **FindGame(pin:str)** -> checks to see if the game is running returns True if it is else False
 
 has some other function that are used in the running of stuff
 
@@ -86,19 +89,19 @@ has some other function that are used in the running of stuff
 
 ### Player Class Functions():
 
-* **start(gamepin:str)** -> requires the gamepin, starts the websocket connection
+* **Start(gamepin:str)** -> requires the gamepin, starts the websocket connection
 
 ##### Joining functions
 
-* **join(name:str,quizuuid:str,profile:str)** -> requires a username to join with, actually joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet
+* **Join(name:str,quizuuid:str,profile:str)** -> requires a username to join with, actually joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet
 
-* **join_crash(name:str)** -> requires a name to join with, joins the hosts game specified in start() but crashes the game
+* **JoinCrash(name:str)** -> requires a name to join with, joins the hosts game specified in start() but crashes the game
 
-* **forceauth()** -> if enabled, this will be automatically activatedd in the join() function, does not work right now
+* **BruteAuth()** -> if enabled, this will be automatically activated in the join() function
 
 ##### Profile Functions
 
-* **profile_generator(avatar:str,cosmetic:str)** ->
+* **GenerateProfile(avatar:str,cosmetic:str)** ->
 
 requires an avatar and comsmetic item (will update the list on release)
 Warning: some event avatar and cosmetics might be in there but they wont work
@@ -115,25 +118,25 @@ cosmetics = [
 ]
 ```
 
-* **update_profile(profile:str)** -> 
+* **UpdateProfile(profile:str)** -> 
 
 requires the profile, a string, generated from profile_generator()
 updates the players profile
 
-* **profile_crash()** -> crashes the game by changing the profile of the player
+* **ProfileCrash()** -> crashes the game by changing the profile of the player
 
 ##### Answer Functions
 
-* **submit_answer(answer,delay:int=0)** -> submits an asnwer
+* **SubmitAnswer(answer,delay:int=0)** -> submits an asnwer
 
 requires the answer and has an optional delay
 answer of 0 is red, 1 is blue, 2 is yellow, 3 is green, auto corrects to the numbers if you type in the color
 
-* **answer_crash()** -> 
+* **AnswerCrash()** -> 
 
 crashes the game through answering a question
 
-* **random_answer(delay:int=0)** ->
+* **RandomAnswer(delay:int=0)** ->
 
 can have a custom delay to look less like a bot if wanted
 just sends a random answer (put in the question_started listener function)
@@ -157,17 +160,17 @@ has a delay argument that is optional to include, default is .5
 
 #### **Auth / 2-step-join functions**
 
-* **auth_brute()** ->
-brute forces the 2-step-join
+* **BruteAuth()** ->
+brute forces the 2-step-join, waits for the auth to reset before brute forcing
 
-* **auth_answer(sequence)** ->
+* **AnswerAuth(sequence)** ->
 submits the sequence provided as the answer to the 2-step-join
 sequence has to be numbers of values 0-3 or else it will always be wrong
 sequence can be anything that turns into a list from list()
 
 ##### Other Functions
 
-* **disconnect()** -> has the player leave the game
+* **Disconnect()** -> has the player leave the game
 
 * **Any Function Avaliable in the BaseClient Class**
 
@@ -175,13 +178,13 @@ sequence can be anything that turns into a list from list()
 
 * **Heartbeat** -> will return the heartbeat count once a heartbeat is sent, automatically returns the hearbeat call
 
-* **handshake1** -> returns True once the handshake responds
+* **Handshake1** -> returns True once the handshake responds
 
-* **handshake2** -> returns True once the second handshake responds
+* **Handshake2** -> returns True once the second handshake responds
 
-* **profile_updated** -> returns True if the profile updated else it returns False
+* **ProfileUpdated** -> returns True if the profile updated else it returns False
 
-* **disconnected** -> returns in the format {"Reason":Reason}
+* **Disconnected** -> returns in the format {"Reason":Reason}
 
 ```python
 #Set reasons are:
@@ -194,7 +197,7 @@ sequence can be anything that turns into a list from list()
 please make an issue and send me the data and what happened in the game
 ```
 
-* **question_started** -> returns the data for the start of a question:
+* **QuestionStarted** -> returns the data for the start of a question:
 
 ```python
 {
@@ -224,7 +227,7 @@ please make an issue and send me the data and what happened in the game
 ```
 
 
-* **question_ended** -> returns the data for the end of the question:
+* **QuestionEnded** -> returns the data for the end of the question:
 
 ```python
 {"Correct": True or False,
@@ -244,7 +247,7 @@ please make an issue and send me the data and what happened in the game
 }
 ```
 
-* **quiz_started** -> returns Quiz question count and a little bit of data on the questions
+* **QuizStarted** -> returns Quiz question count and a little bit of data on the questions
 
 ```python
 {"QuestionCount":QuizQuestionCout,int}
@@ -255,7 +258,7 @@ QuestionData={"type":QuestionType,"PointType": PointType}
 # the first question will contain another key called media
 ```
 
-* **quiz_ended** -> returns the Quiz ended data:
+* **QuizEnded** -> returns the Quiz ended data:
 
 ```python
 {"Rank": #players ending rank,
@@ -279,28 +282,28 @@ QuestionData={"type":QuestionType,"PointType": PointType}
 }
 ```
 
-* **unknown_message** -> just sends the actual websocket message, I would not use this but i added it if you want to
+* **UnknownMessage** -> just sends the actual websocket message, I would not use this but i added it if you want to
 
-* **joined** -> returns True on success but can return an error
+* **Joined** -> returns True on success but can return an error
 
 ```python
 #set error:
 {"Error":"Duplicate name"}
 {"Error":"Game Locked"}
 ```
-* **auth_reset** ->
+* **AuthReset** ->
 returns True when the auth is reset
 
-* **auth_correct** ->
+* **AuthCorrect** ->
 returns True when the auth is correct
 
-* **auth_incorrect** ->
+* **AuthIncorrect** ->
 returns False when the auth is incorrect
 
-* **auth_login** ->
+* **AuthLogin** ->
 returns True when the auth is correct and the bot has logged in the game
 
-* **brainstorm_voting** ->
+* **BrainstormVoting** ->
 returns the voting candidates in a list, this is automatically stored in the bot at bot.BrainstormCandidates
 
 ```python
@@ -407,3 +410,12 @@ updated documentation and readme to current release
 
 V1.4.1 will just be renaming functions as I like the format more
 Ex: profile_generator -> GenerateProfile, random_answer -> RandomAnswer (CamelCase, this will also happen with Listener Functions)
+
+### V1.4.0:
+Renamed functions and listeners into CamelCase so that they all match
+Ex: profile_generator -> GenerateProfile, random_answer -> RandomAnswer
+
+updated documentation and readme to current release
+
+V1.4.1 will add team joining functionality
+V1.4.2 will add a team join crash
