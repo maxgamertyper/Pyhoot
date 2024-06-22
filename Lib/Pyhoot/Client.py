@@ -26,11 +26,12 @@ class BaseClient():
         self.clientid=None
         self.connection_init=threading.Event()
         self.gamepin=None
+        self.name=None
         #Constant data
         self.UserAgent = UA().random
         self.msghandler=None
     
-    def send(self, msg):
+    def Send(self, msg):
         try:
             self.sent=msg[0]
             msg[0]["id"]=self.msgid
@@ -40,17 +41,17 @@ class BaseClient():
             self.msgid += 1
             return "sent"
         except Exception as e:
-            self.exception_handler(exception=Exceptions.SendingException,param1=e)
+            self.ExceptionHandler(exception=Exceptions.SendingException,param1=e)
     
-    def pong(self,ack):
-        packet=self.packet_factory("META_CONNECT",ext={"ack": ack, "timesync": {"tc": self.time(), "l": 0, "o": 0}})
-        self.send(packet)
+    def Pong(self,ack):
+        packet=self.PacketFactory("META_CONNECT",ext={"ack": ack, "timesync": {"tc": self.Time(), "l": 0, "o": 0}})
+        self.Send(packet)
         return "ponged"
     
-    def time(self):
+    def Time(self):
         return str(round(time.time() * 1000))
     
-    def kill(self):
+    def Kill(self):
         if self.WS:
             self.WS.close()
         for thread in threading.enumerate():
@@ -58,23 +59,23 @@ class BaseClient():
                 thread.terminate()
         return "killed"
 
-    def close(self):
+    def Close(self):
         if self.WS:
             self.WS.close()
         return "closed"
 
-    def event_listener(self, Ltype:str):
+    def EventListener(self, Ltype:str):
         def custom_decorator(func):
             if not callable(func):
-                self.exception_handler(Exceptions.ListenerFunctionNotCallableException,Ltype)
+                self.ExceptionHandler(Exceptions.ListenerFunctionNotCallableException,Ltype)
             parameters = inspect.signature(func).parameters
             has_parameters = any(p.kind == p.POSITIONAL_OR_KEYWORD for p in parameters.values())
             if not has_parameters:
-                self.exception_handler(Exceptions.ListenerFunctionParametersException,Ltype)
+                self.ExceptionHandler(Exceptions.ListenerFunctionParametersException,Ltype)
             if Ltype in self.ListeningTypes:
                 self.ListeningFunctions[Ltype] = func
             else:
-                self.exception_handler(Exceptions.UnknownListenerException,Ltype)
+                self.ExceptionHandler(Exceptions.UnknownListenerException,Ltype)
         return custom_decorator
 
     def ListenerFunction(self,functiontype,call=False,data=None):
@@ -84,24 +85,24 @@ class BaseClient():
         return self.ListeningFunctions.get(functiontype) if functiontype in self.ListeningFunctions else None
     
     # websocket connection to kahoot's servers
-    def init_connection(self, ws):
+    def InitConnection(self, ws):
         try:
             self.WS = ws
-            self.send([{"version": "1.0", "minimumVersion": "1.0", "channel": self.WebChannels["META_HANDSHAKE"], "supportedConnectionTypes": ["websocket", "long-polling", "callback-polling"], "advice": {"timeout": 60000, "interval": 0}, "ext": {"ack": True, "timesync": {"tc": self.time(), "l": 0, "o": 0}}}])
+            self.Send([{"version": "1.0", "minimumVersion": "1.0", "channel": self.WebChannels["META_HANDSHAKE"], "supportedConnectionTypes": ["websocket", "long-polling", "callback-polling"], "advice": {"timeout": 60000, "interval": 0}, "ext": {"ack": True, "timesync": {"tc": self.Time(), "l": 0, "o": 0}}}])
         except Exception as e:
-            self.exception_handler(Exceptions.KahootInitException,e)
+            self.ExceptionHandler(Exceptions.KahootInitException,e)
 
     # second part of the connection to kahoot
-    def second_handshake(self):
+    def SecondHandshake(self):
         try:
-            self.send([{"channel": self.WebChannels["META_CONNECT"], "connectionType": "websocket", "advice": {"timeout": 0}, "clientId": self.clientid, "ext": {"ack": 0, "timesync": {"tc": self.time(), "l": 0, "o": 0}}}])
+            self.Send([{"channel": self.WebChannels["META_CONNECT"], "connectionType": "websocket", "advice": {"timeout": 0}, "clientId": self.clientid, "ext": {"ack": 0, "timesync": {"tc": self.Time(), "l": 0, "o": 0}}}])
             self.connection_init.set()
             self.ListenerFunction("handshake_2",True,True)
         except Exception as e:
-            self.exception_handler(Exceptions.KahootInitException,e)
+            self.ExceptionHandler(Exceptions.KahootInitException,e)
     
     def on_open(self,ws):
-        self.init_connection(ws)
+        self.InitConnection(ws)
 
     def on_message(self,ws, message):
         self.BaseMessageHandler(message)
@@ -116,31 +117,31 @@ class BaseClient():
         if ack is True:
             self.ListenerFunction("handshake_1",True,True)
             self.clientid=msg["clientId"]
-            self.second_handshake()
-        elif ack is not None: # if the client gets heartbeat respond with a pong
-            self.pong(ack)
-            self.ListenerFunction("heartbeat",True,ack)
+            self.SecondHandshake()
+        elif ack is not None: # if the client gets Heartbeat respond with a pong
+            self.Pong(ack)
+            self.ListenerFunction("Heartbeat",True,ack)
             
         error = data.get("error") if data.get("error") is not None else msg.get("error")
 
         if error is not None and self.disconnected==False:
             reason = str(data.get("description"))
             if reason == "Duplicate name":
-                self.exception_handler(Exceptions.NameTakenException,self.name)
+                self.ExceptionHandler(Exceptions.NameTakenException,self.name)
             else:
-                self.exception_handler(Exceptions.UnknownException,error,reason)
+                self.ExceptionHandler(Exceptions.UnknownException,error,reason)
             
         if callable(self.msghandler):
             self.msghandler(msg)
 
-    def exception_handler(self,exception,param1,param2=""):
-        self.close()
+    def ExceptionHandler(self,exception,param1,param2=""):
+        self.Close()
         if param2:
             raise exception(param1,param2)
         else:
             raise exception(param1)
         
-    def packet_factory(self,channel,data="",ext={}):
+    def PacketFactory(self,channel,data="",ext={}):
         packet=[{
             "channel":self.WebChannels[channel],
             "clientId":str(self.clientid),
@@ -152,7 +153,7 @@ class BaseClient():
             packet[0].pop("data")
         return packet
     
-    def data_factory(self, content, type1: str, id_int: int = -1):
+    def DataFactory(self, content, type1: str, id_int: int = -1):
         data = {
             "gameid": self.gamepin,
             "host": "kahoot.it",
@@ -165,7 +166,7 @@ class BaseClient():
             data.pop("id")
         return data
     
-    def find_game(self,gamepin):
+    def FindGame(self,gamepin):
         return Token.Token(gamepin,self.UserAgent,check=True)
     
 class Player(BaseClient):
@@ -173,7 +174,7 @@ class Player(BaseClient):
         super().__init__()
         self.token=None
         self.random_text=random_text
-        self.ListeningTypes=["heartbeat","handshake1","handshake2","profile_updated", "disconnected", "question_started", "question_ended", "quiz_started", "quiz_ended", "unknown_message","joined","auth_reset","auth_correct","auth_incorrect","auth_login","brainstorm_voting"]
+        self.ListeningTypes=["Heartbeat","Handshake1","Handshake2","ProfileUpdated", "Disconnected", "QuestionStarted", "QuestionEnded", "QuizStarted", "QuizEnded", "UnknownMessage","Joined","AuthReset","AuthCorrect","AuthIncorrect","AuthLogin","BrainstormVoting"]
         self.joined=threading.Event()
         self.quizuuid=None
         self.msghandler=self.MessageHandler
@@ -195,7 +196,7 @@ class Player(BaseClient):
         self.stableid=None
         self.baseavatar=None
     
-    def start(self,gamepin:str):
+    def Start(self,gamepin:str):
         self.gamepin=gamepin
         if self.token==None:
             a=Token.Token(self.gamepin,self.UserAgent)
@@ -206,47 +207,47 @@ class Player(BaseClient):
             wst=threading.Thread(target=ws.run_forever)
             wst.start()
         except Exception as e:
-            self.exception_handler(Exceptions.WebSocketInitException,e)
+            self.ExceptionHandler(Exceptions.WebSocketInitException,e)
     
-    def join(self,name:str,profile:str="",quizuuid=None):
+    def Join(self,name:str,profile:str="",quizuuid=None):
         self.connection_init.wait()  # Wait for the WebSocket connection to be established
 
         self.quizuuid=quizuuid
         self.name = name
         
-        login_data=self.data_factory({"device":{"userAgent":f"{self.UserAgent}","screen":{"width":1920,"height":1080}}},"login")
-        login_packet=self.packet_factory("SERVICE_CONTROLLER",login_data)
-        login_follup_data=self.data_factory(profile,"message",16)
-        login_followup_packet=self.packet_factory("SERVICE_CONTROLLER",login_follup_data)
-        self.send(login_packet)
-        self.send(login_followup_packet)
+        login_data=self.DataFactory({"device":{"userAgent":f"{self.UserAgent}","screen":{"width":1920,"height":1080}}},"login")
+        login_packet=self.PacketFactory("SERVICE_CONTROLLER",login_data)
+        login_follup_data=self.DataFactory(profile,"message",16)
+        login_followup_packet=self.PacketFactory("SERVICE_CONTROLLER",login_follup_data)
+        self.Send(login_packet)
+        self.Send(login_followup_packet)
         
         if self.authbrute and self.quizdata.get("twoFactorAuth"):
-            self.auth_brute()
+            self.BruteAuth()
         
         return True
             
-    def join_crash(self,name:str):
+    def JoinCrash(self,name:str):
         self.connection_init.wait()  # Wait for the WebSocket connection to be established
         self.name = name
         
-        login_data=self.data_factory({"device":{"userAgent":f"{self.UserAgent}","screen":{"width":1920,"height":1080}}},"login")
-        login_packet=self.packet_factory("SERVICE_CONTROLLER",login_data)
-        login_follup_data=self.data_factory(None,"message",16)
-        login_followup_packet=self.packet_factory("SERVICE_CONTROLLER",login_follup_data)
-        self.send(login_packet)
-        self.send(login_followup_packet)
+        login_data=self.DataFactory({"device":{"userAgent":f"{self.UserAgent}","screen":{"width":1920,"height":1080}}},"login")
+        login_packet=self.PacketFactory("SERVICE_CONTROLLER",login_data)
+        login_follup_data=self.DataFactory(None,"message",16)
+        login_followup_packet=self.PacketFactory("SERVICE_CONTROLLER",login_follup_data)
+        self.Send(login_packet)
+        self.Send(login_followup_packet)
         
-    def auth_brute(self):
+    def BruteAuth(self):
         authcodes=list(itertools.permutations([0,1,2,3],4))
         self.auth_reset.wait()
         for sequence in authcodes:
             if self.auth_correct.is_set():
                 break
-            self.auth_answer(sequence)
+            self.AnswerAuth(sequence)
             time.sleep(random.randint(10,15)/100)
     
-    def auth_answer(self,sequence):
+    def AnswerAuth(self,sequence):
         packet = [{
                 "id":self.msgid,
                 "channel":self.WebChannels["SERVICE_CONTROLLER"],
@@ -258,59 +259,59 @@ class Player(BaseClient):
                 "content":JSON.dumps({"sequence":list(sequence)})},
                 "clientId":str(self.clientid),
                 "ext":{}}]
-        self.send(packet)
+        self.Send(packet)
         
-    def profile_generator(self,avatar:str,cosmetic:str):
+    def GenerateProfile(self,avatar:str,cosmetic:str):
         avatar_map = {'POLAR_BEAR': 2350, 'PENGUIN': 2300, 'SNOWMAN': 5380, 'WOODCHUCK': 1600, 'MOOSE': 1500, 'DOG': 1700, 'CAT': 1750, 'MOUSE': 1800, 'RABBIT': 1850, 'FOX': 1900, 'WOLF': 1950, 'RACCOON': 2000, 'PANDA': 2050, 'FROG': 2100, 'OWL': 2150, 'CHICKEN': 2200, 'TURKEY': 2250, 'CAMEL': 2400, 'TIGER': 2500, 'KOALA': 2550, 'KANGAROO': 2600, 'HORSE': 2650, 'UNICORN': 2700, 'DRAGON': 2800, 'MONSTER': 2850, 'FAUN': 2900, 'BRAIN': 2950, 'ZOMBIE': 3000, 'SKELETON': 3050, 'PLANET_EARTH': 2750}
         cosmetic_map = {'PROPELLER_HAT': 3750, 'PARTY_HAT': 3800, 'DISGUISE': 3850, 'PACIFIER': 3900, 'PANCAKES': 3950, 'ICE_CREAM': 4000, 'FOOTBALL_HELMET': 4150, 'ASTRONAUT_HELMET': 4200, 'WINTER_HUNTING_HAT': 5378, 'REINDEER_HAT': 5377, 'ORANGE_HAT': 5376, 'SNOWFLAKE_HAT': 5370, 'EAR_MUFFS': 5369, '2024_GLASSES': 5379, 'DRAGON_MASK': 5402, 'REFLECTIVE_GOGGLES': 4100, 'COLORFUL_SUNGLASSES': 4050, 'SCARF': 5371, 'KAHOOT_HAT': 1550, 'FLOWER_HAT': 3100, 'CROWN': 3150, 'VIKING_HELMET': 3200, 'GRADUATION_CAP': 3250, 'COWBOY_HAT': 3300, 'WITCH_HAT': 3350, 'HEADPHONES': 3400, 'HEARTS': 3450, 'HEART_SUNGLASSES': 3500, 'GOGGLES': 3550, 'HARD_HAT': 5300, 'SAFARI_HAT': 5309, 'EYEPATCH': 3600, 'MONOCOLE': 1250, 'POWDERED_WIG': 1300, 'EINSTEIN_WIG': 1350, 'HAIR': 1400, 'SUNGLASSES': 3650, 'TOP_HAT': 3700}
         avatarid=avatar_map.get(avatar.replace(" ","_").upper())
         cosmeticid=cosmetic_map.get(cosmetic.replace(" ","_").upper())
         return {"avatar":{"type":avatarid,"item":cosmeticid}}
     
-    def update_profile(self,profile):
+    def UpdateProfile(self,profile):
         self.joined.wait()
-        data=self.data_factory(profile,"message",46)
-        packet=self.packet_factory("SERVICE_CONTROLLER",data)
+        data=self.DataFactory(profile,"message",46)
+        packet=self.PacketFactory("SERVICE_CONTROLLER",data)
         del packet[0]["connectionType"]
         del packet[0]["data"]["name"]
         self.profileid=self.msgid+1
-        self.send(packet)
+        self.Send(packet)
     
-    def disconnect(self):
+    def Disconnect(self):
         self.disconnected=True
-        self.send([{"id":self.msgid,"channel":self.WebChannels["META_DISCONNECT"],"clientId":str(self.clientid),"ext":{"timesync":{"tc":self.time(),"l":0,"o":0}}}])
-        self.ListenerFunction("disconnected",True,{"Reason":"Player Left"})
+        self.Send([{"id":self.msgid,"channel":self.WebChannels["META_DISCONNECT"],"clientId":str(self.clientid),"ext":{"timesync":{"tc":self.Time(),"l":0,"o":0}}}])
+        self.ListenerFunction("Disconnected",True,{"Reason":"Player Left"})
         self.joined.clear()
         if self.cad:
-            self.close()
+            self.Close()
     
     def MessageHandler(self,msg):
         data=self.data.get("data",{})
         
         if data.get("reason")=="disconnect":
             if data.get("type")=="status" and data.get("status")=="MISSING":
-                return self.ListenerFunction("disconnected",True,{"Reason":"Host Left the Game"})
+                return self.ListenerFunction("Disconnected",True,{"Reason":"Host Left the Game"})
             else:
-                return self.ListenerFunction("disconnected",True,{"Reason":data,"Report":"This is an unknown disconnect, please report this and what happened"})
+                return self.ListenerFunction("Disconnected",True,{"Reason":data,"Report":"This is an unknown disconnect, please report this and what happened"})
         
         if data.get("status")=="LOCKED":
-            return self.ListenerFunction("joined",True,{"Error":"Game Locked"})
+            return self.ListenerFunction("Joined",True,{"Error":"Game Locked"})
         
         msgtype=data.get("type")
         msgid=msg.get("id") if msg.get("id") is None else int(msg.get("id"))
         
         if msgid==self.profileid and msg.get("successful") is True:
-            return self.ListenerFunction("profile_updated",True,True)
+            return self.ListenerFunction("ProfileUpdated",True,True)
         elif msgid==self.profileid and msg.get("successful") is False:
-            return self.ListenerFunction("profile_updated",True,False)
+            return self.ListenerFunction("ProfileUpdated",True,False)
         
         if msgtype=="loginResponse": #if its a login response
             self.joined.set()
             if data.get("description")=="Duplicate name":
-                return self.ListenerFunction("joined",True,{"Error":"Duplicate name"})
-            return self.ListenerFunction("joined",True,True) # call the listener joined function
+                return self.ListenerFunction("Joined",True,{"Error":"Duplicate name"})
+            return self.ListenerFunction("Joined",True,True) # call the listener Joined function
         
-        ListeningIds={10:"disconnected",2:"question_started",8:"question_ended",9:"quiz_started",13:"quiz_ended",53:"auth_reset",52:"auth_correct",51:"auth_incorrect",41:"brainstorm_voting",17:"auth_login"}
+        ListeningIds={10:"Disconnected",2:"QuestionStarted",8:"QuestionEnded",9:"QuizStarted",13:"QuizEnded",53:"AuthReset",52:"AuthCorrect",51:"AuthIncorrect",41:"BrainstormVoting",17:"AuthLogin"}
         id=data.get("id")
         
         if id in list(ListeningIds.keys()):
@@ -338,7 +339,7 @@ class Player(BaseClient):
                     },
                 "clientId":self.clientid,
                 "ext":{}}]
-                self.send(followuppacket)
+                self.Send(followuppacket)
             elif id==51: # auth is incorrect
                 return self.ListenerFunction(ListeningIds[id],True,False)
             elif id==10: # disconnected
@@ -346,9 +347,9 @@ class Player(BaseClient):
                     self.ListenerFunction(ListeningIds[id],True,{"Reason":"Host Kicked Player"})
                     self.disconnected=True
                     if self.cad:
-                        self.close()
+                        self.Close()
                     return
-            elif id==9: #quiz_started
+            elif id==9: #QuizStarted
                 upcomingqdata=info.get("upcomingGameBlockData")
                 return_data={
                     "QuestionCount":info.get("gameBlockCount"),
@@ -368,7 +369,7 @@ class Player(BaseClient):
                             "PointType": PointType,
                         }
                 return self.ListenerFunction(ListeningIds[id],True,return_data)
-            elif id==13: #quiz_ended
+            elif id==13: #QuizEnded
                 return_data={
                     "Rank": info.get("rank"),
                     "MedalType": info.get("podiumMedalType"),
@@ -390,7 +391,7 @@ class Player(BaseClient):
                     }
                 }
                 return self.ListenerFunction(ListeningIds[id],True,return_data)
-            elif id==2: #question_started
+            elif id==2: #QuestionStarted
                 self.questionindex=int(JSON.loads(data.get("content")).get("gameBlockIndex"))
                 self.question_data=self.data
                 questiontype=info.get("type")
@@ -418,7 +419,7 @@ class Player(BaseClient):
                     }
                 }
                 return self.ListenerFunction(ListeningIds[id],True,return_data)
-            elif id==8: # question_ended
+            elif id==8: # QuestionEnded
                 return_data={
                     "Correct": info.get("isCorrect"),
                     "CorrectAnswer": info.get("correctChoices"),
@@ -440,7 +441,7 @@ class Player(BaseClient):
                 candidates=info.get("candidates")
                 self.BrainstormCandidates=candidates
                 return self.ListenerFunction(ListeningIds[id],True,{"Candidates":candidates})
-            elif id==17: #auth_login
+            elif id==17: #AuthLogin
                 if info.get("loginState")==0:
                     self.stableid=info.get("stableIdentifier")
                     self.baseavatar=info.get("avatar")
@@ -460,28 +461,28 @@ class Player(BaseClient):
             if type(answer) is dict:
                 content["pin"]=answer
             else:
-                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+                self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
         elif question_type=="jumble" or question_type=="multiple_select_poll" or question_type=="multiple_select_quiz":
             if type(answer) is list:
                 content["choice"]=answer
             else:
-                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+                self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
         elif question_type=="brainstorming" or question_type=="word_cloud" or question_type=="open_ended":
             if type(answer) is str:
                 content["text"]=answer
             else:
-                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+                self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
         elif question_type=="feedback":
             if type(answer) is str:
                 content["text"]=answer
                 content["textHighlightIndex"]=-1
             else:
-                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+                self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
         elif question_type=="slider":
             if type(answer) is int:
                 content["choice"]=answer
             else:
-                self.exception_handler(Exceptions.InvalidAnswerException,answer)
+                self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
         else:
             if JSON.loads(self.question_data.get("data").get("content")).get("layout")=="TRUE_FALSE":
                 if answer=="blue" or answer==0:
@@ -489,7 +490,7 @@ class Player(BaseClient):
                 elif answer=="red" or answer==1:
                     answer=1
                 else:
-                    self.exception_handler(Exceptions.InvalidAnswerException,answer)
+                    self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
             elif question_type=="quiz":
                 if answer=="blue" or answer==0:
                     answer=0
@@ -500,7 +501,7 @@ class Player(BaseClient):
                 elif answer=="green" or answer==3:
                     answer=3
                 else:
-                    self.exception_handler(Exceptions.InvalidAnswerException,answer)
+                    self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
             content["choice"]=answer
         return content
 
@@ -524,7 +525,7 @@ class Player(BaseClient):
         }]
         return packet
     
-    def answer_crash(self):
+    def AnswerCrash(self):
         time.sleep(random.randint(15,25)/100)
         packet=[{
             "channel": self.WebChannels["SERVICE_CONTROLLER"],
@@ -538,20 +539,20 @@ class Player(BaseClient):
             "clientId":str(self.clientid),
             "ext":{}
         }]
-        self.send(packet)
+        self.Send(packet)
         return "Sent (only works when a question is present)"
     
-    def submit_answer(self,answer,delay:int=0):
+    def SubmitAnswer(self,answer,delay:int=0):
         answer=0 if answer=="red" else answer
         answer=1 if answer=="blue" else answer
         answer=2 if answer=="yellow" else answer
         answer=3 if answer=="green" else answer
         time.sleep(delay+.25)
         packet=self.question_packet_factory(answer,delay)
-        self.send(packet)
+        self.Send(packet)
         self.questionindex+=1
 
-    def random_answer(self,delay:int=0):
+    def RandomAnswer(self,delay:int=0):
         answer=None
         content_data=JSON.loads(self.question_data.get("data").get("content"))
         question_type=content_data.get("type")
@@ -585,10 +586,10 @@ class Player(BaseClient):
                 answer=random.randint(0,int(content_data.get("numberOfChoices"))-1)
             elif question_type=="survey":
                 answer=random.randint(0,int(content_data.get("numberOfChoices"))-1)
-        self.submit_answer(answer,delay)
+        self.SubmitAnswer(answer,delay)
     
-    def profile_crash(self):
-        self.update_profile(None)
+    def ProfileCrash(self):
+        self.UpdateProfile(None)
         
     def FinishBrainstorming(self):
         finishbrainstorm_packet=[{
@@ -603,7 +604,7 @@ class Player(BaseClient):
         "clientId":self.clientid,
         "ext":{}
         }]
-        self.send(finishbrainstorm_packet)
+        self.Send(finishbrainstorm_packet)
         
     def BrainstormVote(self,vote:bool,OptionID:int):
         BrainstormVote=[{
@@ -617,7 +618,7 @@ class Player(BaseClient):
             "clientId":self.clientid,
             "ext":{}
             }]
-        self.send(BrainstormVote)
+        self.Send(BrainstormVote)
     
     def RandomBrainstormVote(self,delay:int=.5):
         votes=[]
