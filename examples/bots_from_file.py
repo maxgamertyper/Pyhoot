@@ -15,33 +15,37 @@ names=content.splitlines()
 
 def create_bot(name,gamepin):
     print(f"bot with name: {name} joining {gamepin}")
-    bot=Player()
+    bot=Player(Auth_Brute_Force=True)
     
-    @bot.event_listener(Ltype="joined")
+    @bot.EventListener(Ltype="Joined")
     def joined(data):
         print(f"{name} joined {gamepin}")
     
-    @bot.event_listener(Ltype="disconnected")
+    @bot.EventListener(Ltype="Disconnected")
     def disconnected(data):
         print(f"{name} disconnected because {data.get("Reason")}")
         
-    @bot.event_listener(Ltype="question_started")
+    @bot.EventListener(Ltype="QuestionStarted")
     def question(data):
-        bot.random_answer(random.randint(5,10)/10)
+        bot.RandomAnswer(random.randint(5,10)/10)
         if data.get("QuestionType")=="brainstorming":
             time.sleep(2)
             bot.FinishBrainstorming()
         
-    @bot.event_listener(Ltype="brainstorm_voting")
+    @bot.EventListener(Ltype="BrainstormVoting")
     def brainstorm(data):
         bot.RandomBrainstormVote(random.randint(5,10)/10)
+    
+    @bot.EventListener(Ltype="AuthLogin")
+    def authfinished(data):
+        print(f"{name} has finished the 2-step-join and is in the game!")
         
-    @bot.event_listener(Ltype="quiz_ended")
+    @bot.EventListener(Ltype="QuizEnded")
     def ended(data):
         print(f"{name} ended at {data.get("Rank")} place and had {data.get("PlayerStatistics").get("TotalScore")} points \n")
     
-    bot.start(gamepin)
-    bot.join(name)
+    bot.Start(gamepin)
+    bot.Join(name)
 
 
 for name in names:
