@@ -41,3 +41,7 @@ class UnknownException(Exception):
 class SendingException(Exception):
     def __init__(self,input,error) -> None:
         super().__init__(f"When sending the message: \"{input}\" and error occured, \"{error}\"")
+        
+class GameJoinException(Exception):
+    def __init__(self,gamepin,gametype) -> None:
+        super().__init__(f"When joining the game \"{gamepin}\", the gametype \"{gametype}\" was sent which is not supported")
