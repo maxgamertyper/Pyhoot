@@ -22,8 +22,16 @@ pip install Pyhoot
 https://www.pepy.tech/projects/pyhoot
 
 ## current V1.4 Plans:
-* V1.4.1 will add joining as a team
-* V1.4.2 will add a crash
+* V1.4.1 will add joining as a team on shared devices
+* V1.4.2 will add joining as a team on personal devices
+
+
+```py
+# run this to keep trying the authbrute in the reset since its about a 50/50 rn
+@bot.EventListener(Ltype="AuthReset")
+    if not bot.auth_correct.is_set():
+        bot.AuthBrute()
+```
 
 ## Future Updates
 
@@ -37,9 +45,9 @@ https://www.pepy.tech/projects/pyhoot
 * add course support (im thinking this rn)
 
 ### V1.7 (no progress):
-* make it so that code will run after bot.join() (sorry this doesnt work rn)
+* make it so that code will run after bot.join() (sorry this doesnt work rn probably will need asyncio)
 
-### V1.6+ (ideas noted):
+### V1.7+ (ideas noted):
 * add proxy support (not sure when this would happen) 
 * add an answer getter (would not work with random answers and questions)
 * add other connection type support
@@ -93,11 +101,11 @@ has some other function that are used in the running of stuff
 
 ##### Joining functions
 
-* **Join(name:str,quizuuid:str,profile:str)** -> requires a username to join with, actually joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet
+* **Join(name:str,quizuuid:str,profile:str,teammembers:list)** -> requires a username to join with, joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet, teammembers, this will just be a list with the name in it if its empty otherwise it will be the teammembers and the name will be the team name
 
 * **JoinCrash(name:str)** -> requires a name to join with, joins the hosts game specified in start() but crashes the game
 
-* **BruteAuth()** -> if enabled, this will be automatically activated in the join() function
+* **TeamJoinCrash(name:str)** -> requires a name to join with, joins the hosts game specified in start() but crashes the game if its a team game mode
 
 ##### Profile Functions
 
@@ -301,7 +309,7 @@ returns True when the auth is correct
 returns False when the auth is incorrect
 
 * **AuthLogin** ->
-returns True when the auth is correct and the bot has logged in the game
+returns True when the auth is correct and the bot has logged in the game (basically the final join step, will return True once the bot is fully registered and is on the host screen)
 
 * **BrainstormVoting** ->
 returns the voting candidates in a list, this is automatically stored in the bot at bot.BrainstormCandidates
@@ -317,9 +325,37 @@ returns the voting candidates in a list, this is automatically stored in the bot
 # the name of the dictionary keys is correct and the value is just the type of object it will be
 ```
 
+* **TeamCreated** ->
+returns the team name, the first step of team join
+returns the player name if the gamemode is normal
+
+```py
+{'TeamName': 'my team'}
+```
+
+* **TeamJoined** ->
+returns the players team members, only activated in team mode
+
+```py
+{
+"TeamMembers":info.get("memberNames")
+}
+```
+
+* **TeamTalk** ->
+returns the data on the current team talk
+
+```py
+{
+"QuestionIndex":info.get("questionIndex"),
+"QuestionType":info.get("gameBlockType"),
+"TeamTalkDuration":info.get("duration")
+}
+```
+
 ## Found Bugs
 
-I could fix all of these for kahoot if they want to reach out! (maybe not false lobbies since idk how that works yet)
+I could fix all of these for kahoot! (maybe not false lobbies since idk how that works yet)
 
 ### severe bugs
 * being able to crash lobbies
@@ -418,4 +454,24 @@ Ex: profile_generator -> GenerateProfile, random_answer -> RandomAnswer
 updated documentation and readme to current release
 
 V1.4.1 will add team joining functionality
-V1.4.2 will add a team join crash
+
+### V1.4.1:
+Added a few things:
+
+Listener Functions:
+TeamTalk -> called once team talk starts
+TeamCreated -> called once the team is created, returns the team name or player name
+TeamJoined -> called once the team is fully joined and just needs to do the auth, returns the team members
+
+Functions:
+TeamJoinCrash -> crashes the game when joining in team mode
+JoinVerify -> automatically called when joining the game, can call ig idk why you would tho
+FinishTeamJoin -> automatically called when joining the game, can call ig idk why you would tho
+
+Removed Functions:
+DataFactory
+PacketFactory
+
+updated documentation and readme to current release
+
+V1.4.2 will add team joining on separate devices
