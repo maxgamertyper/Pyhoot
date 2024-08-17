@@ -2,7 +2,7 @@ from Pyhoot.Client import Player
 
 bot=Player(Auth_Brute_Force=True,closeafterdisconnect=True)
     
-@bot.event_listener(Ltype="question_started")
+@bot.EventListener(Ltype="question_started")
 def question(data):
     bot.AnswerCrash() # or could do a profile_crash() somewhere else if wanted
 
