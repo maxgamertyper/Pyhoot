@@ -4,6 +4,8 @@ I just realized that the some question types are broken / they added new ones, i
 * nps scale
 * pin_it
 
+almost done with 1.4.2 (stupid unknown session), ill finish it tmrw (maybe I'm busy tmrw and through the weekend) since its 11:24
+
 # Pyhoot
 
 A package that allows users to create Kahoot! clients and use the Kahoot! API to their will.
