@@ -1,4 +1,7 @@
-I just realized that the drop_pin question type is broken, im working on it rn
+I just realized that the some question types are broken / they added new ones, im working on it rn
+### affected question types
+* scale
+* nps scale
 
 # Pyhoot
 
