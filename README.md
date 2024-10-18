@@ -2,6 +2,7 @@ I just realized that the some question types are broken / they added new ones, i
 ### affected question types
 * scale
 * nps scale
+* pin_it
 
 # Pyhoot
 
