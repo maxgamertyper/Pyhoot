@@ -1,3 +1,5 @@
+I just realized that the drop_pin question type is broken, im working on it rn
+
 # Pyhoot
 
 A package that allows users to create Kahoot! clients and use the Kahoot! API to their will.
