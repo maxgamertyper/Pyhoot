@@ -18,6 +18,10 @@ class GamePinException(Exception):
     def __init__(self,Pin) -> None:
         super().__init__(f"The Gamepin: \"{Pin}\" could not be found")
 
+class UnknownQuestionType(Exception):
+    def __init__(self,qt) -> None:
+        super().__init__(f"The Question Type: \"{qt}\" could not be found, please make an issue to add it!")
+
 class UnknownListenerException(Exception):
     def __init__(self,type) -> None:
         super().__init__(f"The type: \"{type}\" is not a valid listener function, check the docs for valid listeners")
