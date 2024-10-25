@@ -1,6 +1,6 @@
 from Pyhoot.Client import Player
 
-bot=Player(Auth_Brute_Force=True,closeafterdisconnect=True)
+bot=Player(AuthBruteForce=True,CloseAfterDisconnect=True)
     
 # your listener functions here
 
