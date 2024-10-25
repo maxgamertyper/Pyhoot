@@ -1,3 +1,5 @@
+tell me if anything seems inaccurate in an issue or email please, thanks!
+
 # Pyhoot
 
 A package that allows users to create Kahoot! clients and use the Kahoot! API to their will.
@@ -21,33 +23,17 @@ pip install Pyhoot
 
 https://www.pepy.tech/projects/pyhoot
 
-## current V1.4 Plans:
-* V1.4.1 will add joining as a team on shared devices
-* V1.4.2 will add joining as a team on personal devices
-
-
-```py
-# run this to keep trying the authbrute in the reset since its about a 50/50 rn
-@bot.EventListener(Ltype="AuthReset")
-    if not bot.auth_correct.is_set():
-        bot.AuthBrute()
-```
+## current V1.5 Plans:
+* V1.5.0 will add hosting a game
+* V1.5.1 will add locking a game
+* V1.5.2 will add skipping questions and other things
 
 ## Future Updates
 
-### V1.4 (Little Progress):
-* V1.4.0 will rename the functions so that V1.3.3 doesnt have weird function names compared to V1.3.2
-* add team mode support
+### V1.6 (Little Progress):
+* add course support 
 
-### V1.5 and V1.6 (Little Progress):
-* cant decide
-* add ability to host a game or create a game 
-* add course support (im thinking this rn)
-
-### V1.7 (no progress):
-* make it so that code will run after bot.join() (sorry this doesnt work rn probably will need asyncio)
-
-### V1.7+ (ideas noted):
+### V1.6+ (ideas noted):
 * add proxy support (not sure when this would happen) 
 * add an answer getter (would not work with random answers and questions)
 * add other connection type support
@@ -70,9 +56,9 @@ BaseClient() -> this is not really useful unless you are trying to customize som
 
 * **Time()** -> used in some websocket messages, returns time.time() * 1000
 
-* **Kill()** -> kills the websocket thread (i dont think this works)
+* **Kill()** -> kills the websocket thread
 
-* **Close()** -> closes the websocket thread (i dont think this works)
+* **Close()** -> closes the websocket thread
 
 * **EventListenerDecorator** -> sets a function to be an event listener
 
@@ -89,11 +75,11 @@ has some other function that are used in the running of stuff
 
 ### Player Class:
 
-* **Auth_Brute_Force:bool** this is used to determine if it should brute force the 2 factor authentication, broken at the moment, base value is False
+* **AuthBruteForce:bool** this is used to determine if it should brute force the 2 factor authentication, broken at the moment, base value is False
 
-* **random_text:str** this is used to determine what the text should be if random_answer() is called on a text question, base text is "Hello, I am a bot and can not answer this question"
+* **RandomText:str** this is used to determine what the text should be if random_answer() is called on a text question, base text is "Hello, I am a bot and can not answer this question"
 
-* **closeafterdisconnect:bool** this is used to determine if the websocket should close after the player is disconnected, Base value is False (this does not work yet)
+* **CloseAfterFisconnect:bool** this is used to determine if the websocket should close after the player is disconnected, Base value is False
 
 ### Player Class Functions():
 
@@ -101,7 +87,7 @@ has some other function that are used in the running of stuff
 
 ##### Joining functions
 
-* **Join(name:str,quizuuid:str,profile:str,teammembers:list)** -> requires a username to join with, joins the gamepin specified in start(), optional args: profile, can be generated in profile_generator() and Quizuuid, this does nothing yet, teammembers, this will just be a list with the name in it if its empty otherwise it will be the teammembers and the name will be the team name
+* **Join(name:str,quizuuid:str,profile:str,teammembers:list)** -> requires a username to join with, joins the gamepin specified in start(), optional args: profile, can be generated in GenerateProfile() and Quizuuid, this does nothing yet, teammembers, this will just be a list with the name in it if its empty otherwise it will be the teammembers and the name will be the team name
 
 * **JoinCrash(name:str)** -> requires a name to join with, joins the hosts game specified in start() but crashes the game
 
@@ -113,17 +99,13 @@ has some other function that are used in the running of stuff
 
 requires an avatar and comsmetic item (will update the list on release)
 Warning: some event avatar and cosmetics might be in there but they wont work
-returns the string that switches the avatar, should be sent into update_profile()
+returns the string that switches the avatar, should be sent into UpdateProfile()
 
 ```python
 # Official Kahoot names
-avatars = [
-'POLAR_BEAR', 'PENGUIN', 'SNOWMAN', 'WOODCHUCK', 'MOOSE', 'DOG', 'CAT', 'MOUSE', 'RABBIT', 'FOX', 'WOLF', 'RACCOON', 'PANDA', 'FROG', 'OWL', 'CHICKEN', 'TURKEY', 'CAMEL', 'TIGER', 'KOALA', 'KANGAROO', 'HORSE', 'UNICORN', 'DRAGON', 'MONSTER', 'FAUN', 'BRAIN', 'ZOMBIE', 'SKELETON', 'PLANET_EARTH'
-]
+Characters= ['SCARECROW', 'MUMMY', 'ZOMBIE', 'WOODCHUCK', 'MOOSE', 'DOG', 'CAT', 'MOUSE', 'RABBIT', 'FOX', 'WOLF', 'RACCOON', 'PANDA', 'FROG', 'OWL', 'CHICKEN', 'TURKEY', 'PENGUIN', 'POLAR_BEAR', 'CAMEL', 'TIGER', 'KOALA', 'KANGAROO', 'HORSE', 'DRAGON', 'UNICORN', 'MONSTER', 'FAUN', 'BRAIN', 'SKELETON', 'PLANET_EARTH']
 # Kahoot doesnt have official names for these so i just made them up
-cosmetics = [
-'PROPELLER_HAT', 'PARTY_HAT', 'DISGUISE', 'PACIFIER', 'PANCAKES', 'ICE_CREAM', 'FOOTBALL_HELMET', 'ASTRONAUT_HELMET', 'WINTER_HUNTING_HAT', 'REINDEER_HAT', 'ORANGE_HAT', 'SNOWFLAKE_HAT', 'EAR_MUFFS', '2024_GLASSES', 'DRAGON_MASK', 'REFLECTIVE_GOGGLES', 'COLORFUL_SUNGLASSES', 'SCARF', 'KAHOOT_HAT', 'FLOWER_HAT', 'CROWN', 'VIKING_HELMET', 'GRADUATION_CAP', 'COWBOY_HAT', 'WITCH_HAT', 'HEADPHONES', 'HEARTS', 'HEART_SUNGLASSES', 'GOGGLES', 'HARD_HAT', 'SAFARI_HAT', 'EYEPATCH', 'MONOCOLE', 'POWDERED_WIG', 'EINSTEIN_WIG', 'HAIR', 'SUNGLASSES', 'TOP_HAT'
-]
+Cosmetics= ['PUMPKIN_HAT', 'FRANKENSTEIN_HAT', 'SUNGLASSES', 'BASEBALL_CAP', 'FLOWER_CROWN', "KING'S_CROWN", 'VIKING_HELMET', 'GRADUATION_CAP', 'COWBOY_HAT', 'WITCH_HAT', 'HEADPHONES', 'HEARTS', 'HEART-SHAPED_SUNGLASSES', 'SAFETY_GOGGLES', 'HARD_HAT', 'SAFARI_HAT', 'TRAPPER_HAT', 'BEANIE', 'EYE_PATCH', 'SCARF', 'MONOCOLE', 'POWDERED_WIG', 'EINSTEIN_WIG', 'POMPADOUR_HAIR', 'NERD_GLASSES', 'TOP_HAT', 'PILOT_CAP', 'PARTY_HAT', 'DRAGON_MASK', 'MUSTACHE', 'PACIFIER', 'PANCAKE_HAT', 'ICE_CREAM_CONE_HAT', 'RAINBOW_GLASSES', 'SKI_GOGGLES', 'FOOTBALL_HELMET', 'ASTRONAUT_HELMET']
 ```
 
 * **UpdateProfile(profile:str)** -> 
@@ -147,17 +129,17 @@ crashes the game through answering a question
 * **RandomAnswer(delay:int=0)** ->
 
 can have a custom delay to look less like a bot if wanted
-just sends a random answer (put in the question_started listener function)
+just sends a random answer (put in the QuestionStarted listener function)
 
 #### **Brainstorm Functions**
 
 * **FinishBrainstorming()** ->
 
-Tells Kahoot that you are finished with brainstorming questions (as multiple answers can be submitted)
+Tells Kahoot that you are finished with brainstorming questions (multiple answers can be submitted)
 
 * **BrainstormVote(vote:bool,OptionID:int)** ->
 
-Sends the vote for the OptionID provided, OptionIDs are recieved in the brainstorm_voting listener function or at bot.BrainstormCandidates
+Sends the vote for the OptionID provided, OptionIDs are recieved in the BrainstormVoting listener function or at bot.BrainstormCandidates
 a Vote of False does nothing but go to the next option in the webpage
 you need to vote for all options for the game to register your answer as completed, including False
 
@@ -173,7 +155,7 @@ brute forces the 2-step-join, waits for the auth to reset before brute forcing
 
 * **AnswerAuth(sequence)** ->
 submits the sequence provided as the answer to the 2-step-join
-sequence has to be numbers of values 0-3 or else it will always be wrong
+sequence has to be numbers of values 0-3 or else it will always be wrong (EX: [0,1,2,3], [3,0,2,1])
 sequence can be anything that turns into a list from list()
 
 ##### Other Functions
@@ -225,11 +207,17 @@ please make an issue and send me the data and what happened in the game
 "NumberOfAnswers": #number of brainstorming answers allowed,
 "MaximumAnswerLength": #maximum length of brainstorm
 },
-"DropPinData": None if questiontype is not "drop_pin" else {
+"DropPinData": None if questiontype is not "drop_pin" or "pin_it" else {
 "VideoData": #Video Data,
 "ImageURL": # the ImageURL of the DropPin,
 "ImageData": # basic data of the Image,
 "Media": # tbh i have no idea, the amount of media im guessing
+},
+"ScaleData": None if questiontype is not "scale" else {
+"Start":info.get("start"), # if the type is nps this is set to 0
+"End":info.get("end"), # if the type is nps this is set to 10
+"LabelType":info.get("labelType"), # if the typ is nps this is set to likert
+"ScaleType":info.get("scaleType") # if the type is nps this is set to nps
 }
 }
 ```
@@ -248,7 +236,7 @@ please make an issue and send me the data and what happened in the game
 },
 "AnswerStreak": # Your answer streak level, 
 "EndedQuestion": #Which question number just ended, 
-"NemesisData": #None if first place or only player else {
+"NemesisData": None if first-place or only-player else {
 "NemesisName": #nemsis' name,
 "NemesisScore": #nemesis' score,
 }
@@ -475,3 +463,15 @@ PacketFactory
 updated documentation and readme to current release
 
 V1.4.2 will add team joining on separate devices
+
+### V1.4.2
+
+Added support for slider, nps slider, and pin it questions
+
+Updated cosmetics and characters
+
+renamed Player class args to camel case
+Implemented CloseAfterDisconnect
+
+Exceptions:
+UnknownQuestionType, throws when a new questiontype is found, if this happnes please report an issue
