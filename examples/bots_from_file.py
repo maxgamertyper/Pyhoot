@@ -1,5 +1,5 @@
 import threading
-from src.Client import Player
+from Pyhoot.Client import Player
 import random
 import time
 
