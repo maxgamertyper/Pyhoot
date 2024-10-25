@@ -154,10 +154,10 @@ class BaseClient():
         return Token.Token(gamepin,self.UserAgent,check=True)
     
 class Player(BaseClient):
-    def __init__(self,Auth_Brute_Force:bool=False,random_text:str="Hello, I am a bot and can not answer this question",closeafterdisconnect:bool=False):
+    def __init__(self,AuthBruteForce:bool=False,RandomText:str="Hello, I am a bot and can not answer this question",CloseAfterDisconnect:bool=False):
         super().__init__()
         self.token=None
-        self.random_text=random_text
+        self.random_text=RandomText
         self.ListeningTypes=["Heartbeat","Handshake1","Handshake2","ProfileUpdated", "Disconnected", "QuestionStarted", "QuestionEnded", "QuizStarted", "QuizEnded", "UnknownMessage","Joined","AuthReset","AuthCorrect","AuthIncorrect","AuthLogin","BrainstormVoting","TeamJoined","TeamCreated","TeamTalk"]
         self.joined=threading.Event()
         self.quizuuid=None
@@ -165,13 +165,13 @@ class Player(BaseClient):
         #auth
         self.auth_reset=threading.Event()
         self.auth_correct=threading.Event()
-        self.authbrute=Auth_Brute_Force
+        self.authbrute=AuthBruteForce
         #question data
         self.questionindex=0
         self.question_data=None
         self.BrainstormCandidates=None
         #"safety"
-        self.cad=closeafterdisconnect
+        self.cad=CloseAfterDisconnect
         self.disconnected=False
         # quiz data
         self.quizdata=None
@@ -188,10 +188,12 @@ class Player(BaseClient):
         
         if data.get("reason")=="disconnect":
             if data.get("type")=="status" and data.get("status")=="MISSING":
-                return self.ListenerFunction("Disconnected",True,{"Reason":"Host Left the Game"})
+                self.ListenerFunction("Disconnected",True,{"Reason":"Host Left the Game"})
             else:
-                return self.ListenerFunction("Disconnected",True,{"Reason":data,"Report":"This is an unknown disconnect, please report this and what happened"})
-        
+                self.ListenerFunction("Disconnected",True,{"Reason":data,"Report":"This is an unknown disconnect, please report this and what happened"})
+            if self.cad:
+                self.Close()
+            return
         if data.get("status")=="LOCKED":
             return self.ListenerFunction("Joined",True,{"Error":"Game Locked"})
         
@@ -204,6 +206,7 @@ class Player(BaseClient):
             return self.ListenerFunction("ProfileUpdated",True,False)
         
         if msgtype=="loginResponse": #if its a login response
+            self.NameratorPacket()
             self.joined.set()
             if data.get("description")=="Duplicate name":
                 return self.ListenerFunction("Joined",True,{"Error":"Duplicate name"})
@@ -293,13 +296,26 @@ class Player(BaseClient):
                     "NumberOfAnswers": info.get("numberOfAnswersAllowed"),
                     "MaximumAnswerLength": info.get("allowedCharacterLengthPerAnswer")
                     },
-                    "DropPinData": None if questiontype != "drop_pin" else {
+                    "DropPinData": None if questiontype != "pin_it" and questiontype!="drop_pin" else {
                         "VideoData": info.get("video"),
                         "ImageURL": info.get("image"),
                         "ImageData": info.get("imageMetadata"),
                         "Media": info.get("media")
+                    },
+                    "ScaleData": None if questiontype!="scale" else {
+                        "Start":info.get("start"),
+                        "End":info.get("end"),
+                        "LabelType":info.get("labelType"),
+                        "ScaleType":info.get("scaleType")
                     }
                 }
+                if questiontype=="nps":
+                    return_data["ScaleData"]={
+                        "Start":0,
+                        "End":10,
+                        "LabelType":"likert",
+                        "ScaleType":"nps"
+                    }
             elif id==8: # QuestionEnded
                 return_data={
                     "Correct": info.get("isCorrect"),
@@ -328,7 +344,12 @@ class Player(BaseClient):
                     return
                 elif info.get("loginState")==3:
                     return_data=True
-                elif info.get("loginState")==1:
+                elif info.get("loginState")==2: #collaboration / personal devices team join
+                    self.team=info.get("teamMembers")
+                    time.sleep(.5)
+                    self.FinishCollaborationJoin()
+                    return
+                elif info.get("loginState")==1: # shared device team join
                     self.stableid=info.get("stableIdentifier")
                     time.sleep(.5)
                     self.FinishTeamJoin()
@@ -371,7 +392,10 @@ class Player(BaseClient):
         self.quizuuid=quizuuid
         self.name = name
         self.team=[name] if teammembers is None else teammembers
-        SupportedGameTypes=["normal","team"]
+        SupportedGameTypes=["normal","team","collaboration"]
+        
+        if self.quizdata.get("gameType") not in SupportedGameTypes:
+            self.ExceptionHandler(Exceptions.GameJoinException,self.gamepin,self.quizdata.get("gameType"))
         
         if self.quizdata.get("gameType")=="team":
             pre_join_packet=[{
@@ -396,7 +420,11 @@ class Player(BaseClient):
                 "content":JSON.dumps({"device":{"userAgent":self.UserAgent,"screen":{"width":1920,"height":1080}}})},
             "clientId":self.clientid,
             "ext":{}}]
-        
+
+        self.Send(login_packet)
+        return True
+    
+    def NameratorPacket(self):
         login_followup_packet=[{
             "channel":self.WebChannels["SERVICE_CONTROLLER"],
             "data":{
@@ -407,21 +435,13 @@ class Player(BaseClient):
                 "content":JSON.dumps({"usingNamerator":self.quizdata["namerator"]})},
             "clientId":self.clientid,
             "ext":{}}]
-        
-        self.Send(login_packet)
         self.Send(login_followup_packet)
-        
-        
-        if self.quizdata.get("gameType") not in SupportedGameTypes:
-            self.ExceptionHandler(Exceptions.GameJoinException,self.gamepin,self.quizdata.get("gameType"))
-        
         
         if self.authbrute and self.quizdata.get("twoFactorAuth") and self.quizdata.get("gameType")!="team":
             self.BruteAuth()
         
-        
         return True
-            
+    
     def FinishTeamJoin(self):
         if self.teamcrash==True:
             content=JSON.dumps(None)
@@ -439,6 +459,19 @@ class Player(BaseClient):
             "ext":{}}]
         self.Send(team_join_data)
         self.JoinVerify()
+    
+    def FinishCollaborationJoin(self):
+        finish_packet=[{
+            "channel":self.WebChannels["SERVICE_CONTROLLER"],
+            "data":{
+                "gameid":self.gamepin,
+                "type":"message",
+                "host":"kahoot.it",
+                "id":32,
+                "content":JSON.dumps({"index":len(self.team)})},
+            "clientId":self.clientid,
+            "ext":{}}]
+        self.Send(finish_packet)
     
     def JoinCrash(self,name:str,teammembers:list=None):
         self.connection_init.wait()  # Wait for the WebSocket connection to be established
@@ -521,8 +554,8 @@ class Player(BaseClient):
         self.Send(packet)
         
     def GenerateProfile(self,avatar:str,cosmetic:str):
-        avatar_map = {'POLAR_BEAR': 2350, 'PENGUIN': 2300, 'SNOWMAN': 5380, 'WOODCHUCK': 1600, 'MOOSE': 1500, 'DOG': 1700, 'CAT': 1750, 'MOUSE': 1800, 'RABBIT': 1850, 'FOX': 1900, 'WOLF': 1950, 'RACCOON': 2000, 'PANDA': 2050, 'FROG': 2100, 'OWL': 2150, 'CHICKEN': 2200, 'TURKEY': 2250, 'CAMEL': 2400, 'TIGER': 2500, 'KOALA': 2550, 'KANGAROO': 2600, 'HORSE': 2650, 'UNICORN': 2700, 'DRAGON': 2800, 'MONSTER': 2850, 'FAUN': 2900, 'BRAIN': 2950, 'ZOMBIE': 3000, 'SKELETON': 3050, 'PLANET_EARTH': 2750}
-        cosmetic_map = {'PROPELLER_HAT': 3750, 'PARTY_HAT': 3800, 'DISGUISE': 3850, 'PACIFIER': 3900, 'PANCAKES': 3950, 'ICE_CREAM': 4000, 'FOOTBALL_HELMET': 4150, 'ASTRONAUT_HELMET': 4200, 'WINTER_HUNTING_HAT': 5378, 'REINDEER_HAT': 5377, 'ORANGE_HAT': 5376, 'SNOWFLAKE_HAT': 5370, 'EAR_MUFFS': 5369, '2024_GLASSES': 5379, 'DRAGON_MASK': 5402, 'REFLECTIVE_GOGGLES': 4100, 'COLORFUL_SUNGLASSES': 4050, 'SCARF': 5371, 'KAHOOT_HAT': 1550, 'FLOWER_HAT': 3100, 'CROWN': 3150, 'VIKING_HELMET': 3200, 'GRADUATION_CAP': 3250, 'COWBOY_HAT': 3300, 'WITCH_HAT': 3350, 'HEADPHONES': 3400, 'HEARTS': 3450, 'HEART_SUNGLASSES': 3500, 'GOGGLES': 3550, 'HARD_HAT': 5300, 'SAFARI_HAT': 5309, 'EYEPATCH': 3600, 'MONOCOLE': 1250, 'POWDERED_WIG': 1300, 'EINSTEIN_WIG': 1350, 'HAIR': 1400, 'SUNGLASSES': 3650, 'TOP_HAT': 3700}
+        avatar_map = {'SCARECROW': 1066, 'MUMMY': 1066, 'ZOMBIE': 3000, 'WOODCHUCK': 1600, 'MOOSE': 1500, 'DOG': 1700, 'CAT': 1750, 'MOUSE': 1800, 'RABBIT': 1850, 'FOX': 1900, 'WOLF': 1950, 'RACCOON': 2000, 'PANDA': 2050, 'FROG': 2100, 'OWL': 2150, 'CHICKEN': 2200, 'TURKEY': 2250, 'PENGUIN': 2300, 'POLAR_BEAR': 2350, 'CAMEL': 2400, 'TIGER': 2500, 'KOALA': 2550, 'KANGAROO': 2600, 'HORSE': 2650, 'DRAGON': 2800, 'UNICORN': 2700, 'MONSTER': 2850, 'FAUN': 2900, 'BRAIN': 2950, 'SKELETON': 3050, 'PLANET_EARTH': 2750}
+        cosmetic_map = {'PUMPKIN_HAT': 1066, 'FRANKENSTEIN_HAT': 1066, 'SUNGLASSES': 1066, 'BASEBALL_CAP': 1550, 'FLOWER_CROWN': 3100, "KING'S_CROWN": 3150, 'VIKING_HELMET': 3200, 'GRADUATION_CAP': 3250, 'COWBOY_HAT': 3300, 'WITCH_HAT': 3350, 'HEADPHONES': 3400, 'HEARTS': 3450, 'HEART-SHAPED_SUNGLASSES': 3500, 'SAFETY_GOGGLES': 3550, 'HARD_HAT': 5300, 'SAFARI_HAT': 5309, 'TRAPPER_HAT': 5378, 'BEANIE': 5376, 'EYE_PATCH': 5371, 'SCARF': 3600, 'MONOCOLE': 1250, 'POWDERED_WIG': 1300, 'EINSTEIN_WIG': 1350, 'POMPADOUR_HAIR': 1400, 'NERD_GLASSES': 3650, 'TOP_HAT': 3700, 'PILOT_CAP': 3750, 'PARTY_HAT': 3800, 'DRAGON_MASK': 5402, 'MUSTACHE': 3850, 'PACIFIER': 3900, 'PANCAKE_HAT': 3950, 'ICE_CREAM_CONE_HAT': 4000, 'RAINBOW_GLASSES': 4050, 'SKI_GOGGLES': 4100, 'FOOTBALL_HELMET': 4150, 'ASTRONAUT_HELMET': 4200}
         avatarid=avatar_map.get(avatar.replace(" ","_").upper())
         cosmeticid=cosmetic_map.get(cosmetic.replace(" ","_").upper())
         return {"avatar":{"type":avatarid,"item":cosmeticid}}
@@ -557,7 +590,7 @@ class Player(BaseClient):
             "questionIndex":self.questionindex,
             "meta":{"lag":lag}
         }
-        if question_type=="drop_pin":
+        if question_type=="pin_it" or question_type=="drop_pin":
             if type(answer) is dict:
                 content["pin"]=answer
             else:
@@ -578,7 +611,7 @@ class Player(BaseClient):
                 content["textHighlightIndex"]=-1
             else:
                 self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
-        elif question_type=="slider":
+        elif question_type=="slider" or question_type=="scale" or question_type=="nps" or question_type=="survey":
             if type(answer) is int:
                 content["choice"]=answer
             else:
@@ -602,6 +635,8 @@ class Player(BaseClient):
                     answer=3
                 else:
                     self.ExceptionHandler(Exceptions.InvalidAnswerException,answer)
+            else:
+                self.ExceptionHandler(Exceptions.UnknownQuestionType,question_type)
             content["choice"]=answer
         return content
 
@@ -655,7 +690,7 @@ class Player(BaseClient):
         answer=None
         content_data=JSON.loads(self.question_data.get("data").get("content"))
         question_type=content_data.get("type")
-        if question_type=="drop_pin":
+        if question_type=="pin_it" or question_type=="drop_pin":
             # x:0 is far left
             # y:0 is far up
             answer={"x":(random.randint(0,100000000))/1000000,"y":(random.randint(0,100000000))/1000000}
@@ -678,6 +713,12 @@ class Player(BaseClient):
             number=random.randint(min,max)
             number=round(number / step) * step
             answer=number+min
+        elif question_type=="scale":
+            start=int(content_data.get("start"))
+            end=int(content_data.get("end"))
+            answer=random.randint(start,end)
+        elif question_type=="nps":
+            answer=random.randint(0,10)
         else:
             if content_data.get("layout")=="TRUE_FALSE":
                 answer=random.randint(0,1)
@@ -685,6 +726,8 @@ class Player(BaseClient):
                 answer=random.randint(0,int(content_data.get("numberOfChoices"))-1)
             elif question_type=="survey":
                 answer=random.randint(0,int(content_data.get("numberOfChoices"))-1)
+            else:
+                self.ExceptionHandler(Exceptions.UnknownQuestionType,question_type)
         self.SubmitAnswer(answer,delay)
     
     def ProfileCrash(self):
