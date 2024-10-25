@@ -1,5 +1,5 @@
 import threading
-from Pyhoot.Client import Player
+from src.Client import Player
 import random
 import time
 
@@ -15,7 +15,7 @@ names=content.splitlines()
 
 def create_bot(name,gamepin):
     print(f"bot with name: {name} joining {gamepin}")
-    bot=Player(Auth_Brute_Force=True)
+    bot=Player(AuthBruteForce=True)
     
     @bot.EventListener(Ltype="Joined")
     def joined(data):
